@@ -1,24 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Kalkulator from './components/Kalkulator';
 import MitosFakta from './components/MitosFakta';
 import Challenge30Days from './components/Challenge30Days';
 import PrivacyModal from './components/PrivacyModal';
+import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
+import { supabase, isSupabaseConfigured } from './lib/supabase';
 
 export default function App() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    // Sync Supabase Auth Session on mount
+    if (isSupabaseConfigured && supabase) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          setCurrentUser(session.user);
+        }
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setCurrentUser(session?.user ?? null);
+      });
+
+      return () => subscription.unsubscribe();
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.auth.signOut();
+    }
+    setCurrentUser(null);
+  };
 
   return (
     <div className="app">
-      <Navbar onOpenPrivacy={() => setPrivacyOpen(true)} />
+      <Navbar 
+        onOpenPrivacy={() => setPrivacyOpen(true)}
+        onOpenAuth={() => setAuthOpen(true)}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+      />
       
       <main>
         <Hero />
-        <Kalkulator />
+        <Kalkulator currentUser={currentUser} />
         <MitosFakta />
-        <Challenge30Days />
+        <Challenge30Days currentUser={currentUser} />
         
         {/* SDG 3 Impact Highlight Card */}
         <section className="container" style={{ margin: '60px auto' }}>
@@ -45,6 +78,13 @@ export default function App() {
       <PrivacyModal 
         isOpen={privacyOpen} 
         onClose={() => setPrivacyOpen(false)} 
+      />
+
+      <AuthModal 
+        isOpen={authOpen}
+        onClose={() => setAuthOpen(false)}
+        onAuthSuccess={(user) => setCurrentUser(user)}
+        currentUser={currentUser}
       />
     </div>
   );

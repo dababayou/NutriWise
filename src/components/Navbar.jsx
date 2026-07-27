@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ShieldCheck } from 'lucide-react';
+import { Menu, X, ShieldCheck, User, LogOut } from 'lucide-react';
 
-export default function Navbar({ onOpenPrivacy }) {
+export default function Navbar({ onOpenPrivacy, onOpenAuth, currentUser, onLogout }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -12,6 +12,8 @@ export default function Navbar({ onOpenPrivacy }) {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Pengguna';
 
   return (
     <header className={`navbar-wrapper ${scrolled ? 'scrolled' : ''}`}>
@@ -41,9 +43,35 @@ export default function Navbar({ onOpenPrivacy }) {
           </li>
         </ul>
 
-        <a href="#challenge" className="btn-cta-outline">
-          Mulai Challenge
-        </a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {currentUser ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-cream)', padding: '6px 14px', borderRadius: '30px', fontSize: '0.9rem', fontWeight: 700, border: '1px solid rgba(47, 99, 35, 0.2)' }}>
+                <User size={16} color="#2F6323" />
+                <span>{displayName}</span>
+              </div>
+              <button 
+                onClick={onLogout}
+                title="Keluar"
+                style={{ background: 'none', border: '1px solid #E2E8F0', padding: '8px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <LogOut size={16} color="#94A3B8" />
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={onOpenAuth} 
+              className="btn-cta-outline"
+              style={{ padding: '8px 20px', fontSize: '0.9rem' }}
+            >
+              Masuk / Daftar
+            </button>
+          )}
+
+          <a href="#challenge" className="btn-hero-more" style={{ padding: '10px 22px', fontSize: '0.9rem' }}>
+            Mulai Challenge
+          </a>
+        </div>
 
         <button 
           className="mobile-toggle" 
