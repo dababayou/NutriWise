@@ -326,11 +326,11 @@ h1, h2, h3, h4, .font-serif {
   padding: 8px;
 }
 
-/* Hero Section matching reference image */
+/* Hero Section matching reference image - flush to bottom left corner */
 .hero-section {
   position: relative;
   min-height: 90vh;
-  padding: 140px 32px 60px;
+  padding: 140px 0 0 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -360,16 +360,17 @@ h1, h2, h3, h4, .font-serif {
   align-items: flex-end;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 32px;
   width: 100%;
 }
 
 .hero-left-column {
-  max-width: 720px;
+  max-width: 740px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   align-items: flex-start;
+  margin-left: 0;
+  margin-bottom: 0;
 }
 
 .hero-top-text {
@@ -377,10 +378,13 @@ h1, h2, h3, h4, .font-serif {
   font-size: 1.15rem;
   line-height: 1.6;
   font-weight: 500;
-  max-width: 620px;
+  max-width: 640px;
+  padding-left: 36px;
+  padding-right: 20px;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
   background: transparent;
-  padding: 0;
+  padding-top: 0;
+  padding-bottom: 0;
   border: none;
 }
 
@@ -403,7 +407,7 @@ h1, h2, h3, h4, .font-serif {
 
 .hero-text-line {
   background-color: #FFFCF4;
-  padding: 10px 28px;
+  padding: 12px 32px;
   display: inline-block;
   color: var(--color-dark);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.15);
@@ -411,18 +415,22 @@ h1, h2, h3, h4, .font-serif {
 }
 
 .hero-text-line:first-child {
-  border-top-left-radius: 32px;
-  border-top-right-radius: 32px;
+  border-top-left-radius: 36px;
+  border-top-right-radius: 36px;
+  padding-left: 36px;
 }
 
 .hero-text-line:nth-child(2) {
-  border-top-right-radius: 32px;
-  border-bottom-right-radius: 32px;
+  border-top-right-radius: 36px;
+  border-bottom-right-radius: 36px;
+  padding-left: 36px;
 }
 
 .hero-text-line:last-child {
-  border-bottom-left-radius: 32px;
-  border-bottom-right-radius: 32px;
+  border-bottom-left-radius: var(--radius-xl);
+  border-bottom-right-radius: 36px;
+  padding-left: 36px;
+  padding-bottom: 18px;
 }
 
 .hero-headline span.italic-green {
@@ -432,7 +440,8 @@ h1, h2, h3, h4, .font-serif {
 }
 
 .hero-right-column {
-  margin-bottom: 8px;
+  margin-bottom: 32px;
+  margin-right: 32px;
 }
 
 .btn-hero-more {
