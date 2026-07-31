@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Flame, Trophy, Calendar, Cloud, Lock } from 'lucide-react';
+import { Check, Flame, Trophy, Calendar, Cloud, Lock, X } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const defaultHabits = [
@@ -113,11 +113,11 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Lock size={20} color="#2F6323" />
               <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--color-dark)' }}>
-                Mode Pratinjau: Silakan masuk untuk mengaktifkan pelacak &amp; menyinkronkan progresmu.
+                Mode Pratinjau: Klik target harian atau kalender di bawah untuk mulai tantangan.
               </span>
             </div>
             <button 
-              onClick={onOpenAuth}
+              onClick={() => setShowAuthPrompt(true)}
               className="btn-nav-combined"
               style={{ height: '38px', minWidth: '140px', fontSize: '0.88rem' }}
             >
@@ -220,24 +220,31 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
         </div>
       </div>
 
-      {/* Login Prompt Modal when Guest interacts with Challenge */}
+      {/* Login Prompt Popup Modal when Guest tries to check target or calendar */}
       {showAuthPrompt && (
-        <div className="modal-backdrop" onClick={() => setShowAuthPrompt(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', textAlign: 'center', padding: '32px 28px' }}>
-            <div style={{ width: '56px', height: '56px', background: 'rgba(47, 99, 35, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-              <Lock color="#2F6323" size={28} />
+        <div className="modal-overlay" onClick={() => setShowAuthPrompt(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px', textAlign: 'center', padding: '36px 32px' }}>
+            <button className="modal-close" onClick={() => setShowAuthPrompt(false)}>
+              <X size={20} />
+            </button>
+            
+            <div style={{ width: '64px', height: '64px', background: 'rgba(47, 99, 35, 0.12)', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+              <Lock color="#2F6323" size={32} />
             </div>
-            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', fontWeight: 700, marginBottom: '8px', color: 'var(--color-dark)' }}>
-              Mulai Tantangan Sehatmu!
+            
+            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 700, marginBottom: '10px', color: 'var(--color-dark)' }}>
+              Akses Fitur Terkunci
             </h3>
+            
             <p style={{ color: 'var(--color-muted)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '24px' }}>
-              Silakan masuk atau daftar akun NutriWise terlebih dahulu untuk mengaktifkan pelacak 30-Day Challenge dan menyimpan kemajuan harianmu secara otomatis.
+              Silakan <strong>Masuk</strong> atau <strong>Daftar Akun NutriWise</strong> terlebih dahulu untuk mengaktifkan pelacak harian 30-Day Health Challenge dan menyinkronkan progresmu secara otomatis lintas perangkat.
             </p>
+            
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               <button 
                 onClick={() => setShowAuthPrompt(false)} 
                 className="btn-cta-outline"
-                style={{ borderColor: '#E2E8F0', color: '#64748B' }}
+                style={{ borderColor: '#CBD5E1', color: '#64748B', padding: '10px 20px', fontSize: '0.9rem' }}
               >
                 Nanti Saja
               </button>
@@ -247,7 +254,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
                   if (onOpenAuth) onOpenAuth();
                 }} 
                 className="btn-nav-combined"
-                style={{ width: 'auto', padding: '10px 24px' }}
+                style={{ minWidth: '160px' }}
               >
                 <span className="btn-text-default">Masuk / Daftar</span>
                 <span className="btn-text-hover">Masuk / Daftar</span>
