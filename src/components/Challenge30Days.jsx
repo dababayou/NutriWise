@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Flame, Trophy, Calendar } from 'lucide-react';
+import { Check, Flame, Trophy, Calendar, Cloud } from 'lucide-react';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const defaultHabits = [
   { id: 'water', text: 'Minum minimal 2-3 liter air putih' },
@@ -9,7 +10,7 @@ const defaultHabits = [
   { id: 'nosugar', text: 'Hindari minuman manis berlebih' }
 ];
 
-export default function Challenge30Days() {
+export default function Challenge30Days({ currentUser }) {
   const [completedDays, setCompletedDays] = useState(() => {
     const saved = localStorage.getItem('nutriwise_days');
     return saved ? JSON.parse(saved) : [1, 2, 3];
@@ -20,31 +21,57 @@ export default function Challenge30Days() {
     return saved ? JSON.parse(saved) : { water: true, walk: true };
   });
 
+  // Sync from Supabase Cloud on login
   useEffect(() => {
-    localStorage.setItem('nutriwise_days', JSON.stringify(completedDays));
-  }, [completedDays]);
+    if (currentUser?.user_metadata) {
+      const cloudDays = currentUser.user_metadata.nutriwise_days;
+      const cloudHabits = currentUser.user_metadata.nutriwise_today_habits;
+      
+      if (Array.isArray(cloudDays)) {
+        setCompletedDays(cloudDays);
+        localStorage.setItem('nutriwise_days', JSON.stringify(cloudDays));
+      }
+      if (cloudHabits && typeof cloudHabits === 'object') {
+        setTodayHabits(cloudHabits);
+        localStorage.setItem('nutriwise_today_habits', JSON.stringify(cloudHabits));
+      }
+    }
+  }, [currentUser]);
 
-  useEffect(() => {
-    localStorage.setItem('nutriwise_today_habits', JSON.stringify(todayHabits));
-  }, [todayHabits]);
+  // Save to Supabase Cloud & LocalStorage
+  const saveProgress = async (newDays, newHabits) => {
+    setCompletedDays(newDays);
+    setTodayHabits(newHabits);
+    localStorage.setItem('nutriwise_days', JSON.stringify(newDays));
+    localStorage.setItem('nutriwise_today_habits', JSON.stringify(newHabits));
 
-  const toggleHabit = (id) => {
-    setTodayHabits(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
+    if (currentUser && isSupabaseConfigured && supabase) {
+      try {
+        await supabase.auth.updateUser({
+          data: {
+            nutriwise_days: newDays,
+            nutriwise_today_habits: newHabits
+          }
+        });
+      } catch (err) {
+        console.error('Failed to sync challenge data to Supabase:', err);
+      }
+    }
   };
 
-  const progressPercent = Math.round((completedDays.length / 30) * 100);
+  const toggleHabit = (id) => {
+    const updatedHabits = {
+      ...todayHabits,
+      [id]: !todayHabits[id]
+    };
+    saveProgress(completedDays, updatedHabits);
+  };
 
   const toggleDayComplete = (dayNum) => {
-    setCompletedDays(prev => {
-      if (prev.includes(dayNum)) {
-        return prev.filter(d => d !== dayNum);
-      } else {
-        return [...prev, dayNum];
-      }
-    });
+    const updatedDays = completedDays.includes(dayNum)
+      ? completedDays.filter(d => d !== dayNum)
+      : [...completedDays, dayNum];
+    saveProgress(updatedDays, todayHabits);
   };
 
   return (
@@ -64,7 +91,13 @@ export default function Challenge30Days() {
               {completedDays.length} dari 30 Hari Selesai ({progressPercent}%)
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+            {currentUser && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(47, 99, 35, 0.12)', padding: '8px 16px', borderRadius: '30px', fontWeight: 700, color: 'var(--color-forest)', fontSize: '0.88rem' }}>
+                <Cloud size={18} color="#2F6323" />
+                Cloud Sync Akun
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-cream)', padding: '8px 16px', borderRadius: '30px', fontWeight: 700, color: 'var(--color-forest)' }}>
               <Flame color="#FF6B6B" size={20} />
               Streak: {completedDays.length} Hari
