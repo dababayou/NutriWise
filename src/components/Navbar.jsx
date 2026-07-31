@@ -36,9 +36,9 @@ export default function Navbar({ onOpenPrivacy, onOpenAuth, currentUser, onLogou
           <li>
             <button 
               onClick={() => { setMobileMenuOpen(false); onOpenPrivacy(); }} 
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '1rem', fontWeight: 600, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '6px' }}
+              className="btn-nav-privacy"
             >
-              <ShieldCheck size={18} color="#C7DC5B" /> Privasi & Data
+              <ShieldCheck size={18} className="privacy-icon" /> Privasi & Data
             </button>
           </li>
         </ul>

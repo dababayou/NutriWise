@@ -88,33 +88,32 @@ h1, h2, h3, h4, .font-serif {
   margin-bottom: 48px;
 }
 
-/* Transparent Navbar Header matching attached user screenshot */
+/* Navbar Header: Initial Floating Transparent Oval Pill -> Scrolled Sticky Cream Header */
 .navbar-wrapper {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  padding: 16px 32px;
-  background: rgba(13, 15, 11, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  transition: var(--transition-normal);
+  padding: 20px 24px;
+  background: transparent;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .navbar-inner {
   max-width: 1240px;
   margin: 0 auto;
-  background: transparent;
-  border-radius: 0;
-  padding: 4px 0;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 60px;
+  padding: 12px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: none;
-  border: none;
-  transition: var(--transition-normal);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .navbar-logo {
@@ -127,6 +126,7 @@ h1, h2, h3, h4, .font-serif {
   font-weight: 800;
   font-family: var(--font-sans);
   letter-spacing: -0.02em;
+  transition: color 0.3s ease;
 }
 
 .navbar-logo img {
@@ -147,7 +147,7 @@ h1, h2, h3, h4, .font-serif {
   color: #FFFFFF;
   font-weight: 600;
   font-size: 1rem;
-  transition: var(--transition-fast);
+  transition: color 0.3s ease;
   position: relative;
 }
 
@@ -169,6 +169,66 @@ h1, h2, h3, h4, .font-serif {
 
 .navbar-menu a:hover::after {
   width: 100%;
+}
+
+.btn-nav-privacy {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.3s ease;
+}
+
+.btn-nav-privacy .privacy-icon {
+  color: var(--color-lime);
+  transition: color 0.3s ease;
+}
+
+/* Scrolled Sticky State */
+.navbar-wrapper.scrolled {
+  padding: 12px 24px;
+  background: rgba(255, 252, 244, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 20px rgba(13, 15, 11, 0.08);
+}
+
+.scrolled .navbar-inner {
+  background: transparent;
+  border-radius: 0;
+  padding: 4px 0;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.scrolled .navbar-logo {
+  color: var(--color-dark);
+}
+
+.scrolled .navbar-menu a {
+  color: var(--color-dark);
+}
+
+.scrolled .navbar-menu a:hover {
+  color: var(--color-forest);
+}
+
+.scrolled .navbar-menu a::after {
+  background-color: var(--color-forest);
+}
+
+.scrolled .btn-nav-privacy {
+  color: var(--color-dark);
+}
+
+.scrolled .btn-nav-privacy .privacy-icon {
+  color: var(--color-forest);
 }
 
 .btn-cta-outline {
