@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Flame, Trophy, Calendar, Cloud } from 'lucide-react';
+import { Check, Flame, Trophy, Calendar, Cloud, Lock } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const defaultHabits = [
@@ -10,16 +10,18 @@ const defaultHabits = [
   { id: 'nosugar', text: 'Hindari minuman manis berlebih' }
 ];
 
-export default function Challenge30Days({ currentUser }) {
+export default function Challenge30Days({ currentUser, onOpenAuth }) {
   const [completedDays, setCompletedDays] = useState(() => {
     const saved = localStorage.getItem('nutriwise_days');
-    return saved ? JSON.parse(saved) : [1, 2, 3];
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [todayHabits, setTodayHabits] = useState(() => {
     const saved = localStorage.getItem('nutriwise_today_habits');
-    return saved ? JSON.parse(saved) : { water: true, walk: true };
+    return saved ? JSON.parse(saved) : {};
   });
+
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   // Sync from Supabase Cloud on login
   useEffect(() => {
@@ -60,6 +62,10 @@ export default function Challenge30Days({ currentUser }) {
   };
 
   const toggleHabit = (id) => {
+    if (!currentUser) {
+      setShowAuthPrompt(true);
+      return;
+    }
     const updatedHabits = {
       ...todayHabits,
       [id]: !todayHabits[id]
@@ -68,13 +74,20 @@ export default function Challenge30Days({ currentUser }) {
   };
 
   const toggleDayComplete = (dayNum) => {
+    if (!currentUser) {
+      setShowAuthPrompt(true);
+      return;
+    }
     const updatedDays = completedDays.includes(dayNum)
       ? completedDays.filter(d => d !== dayNum)
       : [...completedDays, dayNum];
     saveProgress(updatedDays, todayHabits);
   };
 
-  const progressPercent = Math.round((completedDays.length / 30) * 100);
+  // Determine display state based on authentication
+  const displayDays = currentUser ? completedDays : [];
+  const displayHabits = currentUser ? todayHabits : {};
+  const progressPercent = currentUser ? Math.round((completedDays.length / 30) * 100) : 0;
 
   return (
     <section id="challenge" className="section container">
@@ -84,29 +97,63 @@ export default function Challenge30Days({ currentUser }) {
       </p>
 
       <div className="challenge-card">
+        {!currentUser && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(255,252,244,0.9) 0%, rgba(240,247,235,0.9) 100%)',
+            border: '1px solid rgba(47, 99, 35, 0.2)',
+            borderRadius: '16px',
+            padding: '16px 24px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Lock size={20} color="#2F6323" />
+              <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--color-dark)' }}>
+                Mode Pratinjau: Silakan masuk untuk mengaktifkan pelacak &amp; menyinkronkan progresmu.
+              </span>
+            </div>
+            <button 
+              onClick={onOpenAuth}
+              className="btn-nav-combined"
+              style={{ height: '38px', minWidth: '140px', fontSize: '0.88rem' }}
+            >
+              <span className="btn-text-default">Mulai Challenge</span>
+              <span className="btn-text-hover">Masuk / Daftar</span>
+            </button>
+          </div>
+        )}
+
         <div className="progress-header">
           <div>
             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 700 }}>
               Kemajuan Tantangan Sehat
             </h3>
             <p style={{ color: 'var(--color-muted)', fontSize: '0.9rem' }}>
-              {completedDays.length} dari 30 Hari Selesai ({progressPercent}%)
+              {displayDays.length} dari 30 Hari Selesai ({progressPercent}%)
             </p>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {currentUser && (
+            {currentUser ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(47, 99, 35, 0.12)', padding: '8px 16px', borderRadius: '30px', fontWeight: 700, color: 'var(--color-forest)', fontSize: '0.88rem' }}>
                 <Cloud size={18} color="#2F6323" />
                 Cloud Sync Akun
               </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(148, 163, 184, 0.15)', padding: '8px 16px', borderRadius: '30px', fontWeight: 600, color: '#64748B', fontSize: '0.88rem' }}>
+                <Lock size={16} /> Belum Login
+              </div>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-cream)', padding: '8px 16px', borderRadius: '30px', fontWeight: 700, color: 'var(--color-forest)' }}>
               <Flame color="#FF6B6B" size={20} />
-              Streak: {completedDays.length} Hari
+              Streak: {displayDays.length} Hari
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-cream)', padding: '8px 16px', borderRadius: '30px', fontWeight: 700, color: 'var(--color-forest)' }}>
               <Trophy color="#FFB800" size={20} />
-              Level: Pejuang Sehat
+              Level: {currentUser ? 'Pejuang Sehat' : 'Pemula'}
             </div>
           </div>
         </div>
@@ -121,12 +168,13 @@ export default function Challenge30Days({ currentUser }) {
 
         <div className="task-grid">
           {defaultHabits.map((habit) => {
-            const isChecked = !!todayHabits[habit.id];
+            const isChecked = !!displayHabits[habit.id];
             return (
               <div 
                 key={habit.id} 
                 className={`task-item ${isChecked ? 'completed' : ''}`}
                 onClick={() => toggleHabit(habit.id)}
+                style={{ cursor: 'pointer' }}
               >
                 <div className="task-checkbox">
                   {isChecked && <Check size={16} />}
@@ -143,7 +191,7 @@ export default function Challenge30Days({ currentUser }) {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '10px' }}>
           {Array.from({ length: 30 }, (_, i) => i + 1).map((day) => {
-            const isDone = completedDays.includes(day);
+            const isDone = displayDays.includes(day);
             return (
               <button
                 key={day}
@@ -171,6 +219,43 @@ export default function Challenge30Days({ currentUser }) {
           })}
         </div>
       </div>
+
+      {/* Login Prompt Modal when Guest interacts with Challenge */}
+      {showAuthPrompt && (
+        <div className="modal-backdrop" onClick={() => setShowAuthPrompt(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', textAlign: 'center', padding: '32px 28px' }}>
+            <div style={{ width: '56px', height: '56px', background: 'rgba(47, 99, 35, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <Lock color="#2F6323" size={28} />
+            </div>
+            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', fontWeight: 700, marginBottom: '8px', color: 'var(--color-dark)' }}>
+              Mulai Tantangan Sehatmu!
+            </h3>
+            <p style={{ color: 'var(--color-muted)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '24px' }}>
+              Silakan masuk atau daftar akun NutriWise terlebih dahulu untuk mengaktifkan pelacak 30-Day Challenge dan menyimpan kemajuan harianmu secara otomatis.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setShowAuthPrompt(false)} 
+                className="btn-cta-outline"
+                style={{ borderColor: '#E2E8F0', color: '#64748B' }}
+              >
+                Nanti Saja
+              </button>
+              <button 
+                onClick={() => {
+                  setShowAuthPrompt(false);
+                  if (onOpenAuth) onOpenAuth();
+                }} 
+                className="btn-nav-combined"
+                style={{ width: 'auto', padding: '10px 24px' }}
+              >
+                <span className="btn-text-default">Masuk / Daftar</span>
+                <span className="btn-text-hover">Masuk / Daftar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

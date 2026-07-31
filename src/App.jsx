@@ -51,7 +51,7 @@ export default function App() {
         <Hero />
         <Kalkulator currentUser={currentUser} />
         <MitosFakta />
-        <Challenge30Days currentUser={currentUser} />
+        <Challenge30Days currentUser={currentUser} onOpenAuth={() => setAuthOpen(true)} />
         
         {/* SDG 3 Impact Highlight Card */}
         <section className="container" style={{ margin: '60px auto' }}>
