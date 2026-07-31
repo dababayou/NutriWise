@@ -46,6 +46,9 @@ export default function Navbar({ onOpenPrivacy, onOpenAuth, currentUser, onLogou
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {currentUser ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <a href="#challenge" className="btn-cta-outline" style={{ padding: '8px 18px', fontSize: '0.88rem' }}>
+                30-Day Challenge
+              </a>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-cream)', padding: '6px 14px', borderRadius: '30px', fontSize: '0.9rem', fontWeight: 700, border: '1px solid rgba(47, 99, 35, 0.2)' }}>
                 <User size={16} color="#2F6323" />
                 <span>{displayName}</span>
@@ -61,16 +64,13 @@ export default function Navbar({ onOpenPrivacy, onOpenAuth, currentUser, onLogou
           ) : (
             <button 
               onClick={onOpenAuth} 
-              className="btn-cta-outline"
-              style={{ padding: '8px 20px', fontSize: '0.9rem' }}
+              className="btn-nav-combined"
+              aria-label="Mulai Challenge / Masuk Daftar"
             >
-              Masuk / Daftar
+              <span className="btn-text-default">Mulai Challenge</span>
+              <span className="btn-text-hover">Masuk / Daftar</span>
             </button>
           )}
-
-          <a href="#challenge" className="btn-hero-more" style={{ padding: '10px 22px', fontSize: '0.9rem' }}>
-            Mulai Challenge
-          </a>
         </div>
 
         <button 
