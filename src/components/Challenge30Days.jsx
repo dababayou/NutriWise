@@ -74,6 +74,8 @@ export default function Challenge30Days({ currentUser }) {
     saveProgress(updatedDays, todayHabits);
   };
 
+  const progressPercent = Math.round((completedDays.length / 30) * 100);
+
   return (
     <section id="challenge" className="section container">
       <h2 className="section-title">30-Day Health Challenge</h2>
