@@ -204,7 +204,7 @@ h1, h2, h3, h4, .font-serif {
   box-shadow: 0 4px 12px rgba(47, 99, 35, 0.25);
 }
 
-/* Combined Navbar Button: Mulai Challenge -> Masuk / Daftar on hover */
+/* Combined Navbar Button: Mulai Challenge (Solid Green) -> Masuk / Daftar (Green Outline) on hover */
 .btn-nav-combined {
   position: relative;
   display: inline-flex;
@@ -213,16 +213,17 @@ h1, h2, h3, h4, .font-serif {
   padding: 10px 24px;
   border: 2px solid var(--color-forest);
   border-radius: 50px;
-  color: var(--color-forest);
+  color: #FFFFFF;
   font-weight: 700;
   font-size: 0.95rem;
   text-decoration: none;
-  background: #FFFCF4;
+  background-color: var(--color-forest);
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 170px;
   height: 44px;
+  box-shadow: 0 4px 12px rgba(47, 99, 35, 0.25);
 }
 
 .btn-nav-combined .btn-text-default,
@@ -233,6 +234,11 @@ h1, h2, h3, h4, .font-serif {
   gap: 6px;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
   white-space: nowrap;
+}
+
+.btn-nav-combined .btn-text-default {
+  color: #FFFFFF;
+  font-weight: 700;
 }
 
 .btn-nav-combined .btn-text-hover {
@@ -246,7 +252,7 @@ h1, h2, h3, h4, .font-serif {
 .btn-nav-combined:hover {
   background-color: #FFFCF4;
   border-color: var(--color-forest);
-  box-shadow: 0 4px 16px rgba(47, 99, 35, 0.25);
+  box-shadow: 0 6px 18px rgba(47, 99, 35, 0.2);
   transform: translateY(-2px);
 }
 
