@@ -923,22 +923,23 @@ h1, h2, h3, h4, .font-serif {
 /* Auth Page dedicated view matching login.jpeg & reg.jpeg with NutriWise Palette */
 .auth-page-wrapper {
   min-height: 100vh;
+  width: 100%;
   background-color: var(--color-cream);
-  background-image: radial-gradient(circle at 10% 20%, rgba(47, 99, 35, 0.05) 0%, transparent 40%),
-                    radial-gradient(circle at 90% 80%, rgba(199, 220, 91, 0.1) 0%, transparent 40%);
+  background-image: radial-gradient(circle at 10% 20%, rgba(47, 99, 35, 0.06) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(199, 220, 91, 0.12) 0%, transparent 40%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 110px 24px 60px;
+  padding: 32px 24px;
 }
 
 .auth-page-container {
   width: 100%;
-  max-width: 980px;
+  max-width: 1060px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .auth-header-bar {
@@ -973,10 +974,10 @@ h1, h2, h3, h4, .font-serif {
 /* Split Card Container */
 .auth-split-card {
   width: 100%;
-  min-height: 560px;
+  min-height: 600px;
   background: #FFFFFF;
   border-radius: 28px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.09);
   overflow: hidden;
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -74,13 +74,15 @@ export default function App() {
 
   return (
     <div className="app">
-      <Navbar 
-        onOpenPrivacy={() => setPrivacyOpen(true)}
-        onOpenAuth={() => handleOpenAuth('login')}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-        onNavigateHome={handleBackHome}
-      />
+      {currentView !== 'auth' && (
+        <Navbar 
+          onOpenPrivacy={() => setPrivacyOpen(true)}
+          onOpenAuth={() => handleOpenAuth('login')}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          onNavigateHome={handleBackHome}
+        />
+      )}
       
       {currentView === 'auth' ? (
         <AuthPage 
@@ -119,7 +121,9 @@ export default function App() {
         </main>
       )}
 
-      <Footer onOpenPrivacy={() => setPrivacyOpen(true)} />
+      {currentView !== 'auth' && (
+        <Footer onOpenPrivacy={() => setPrivacyOpen(true)} />
+      )}
       
       <PrivacyModal 
         isOpen={privacyOpen} 
