@@ -919,3 +919,294 @@ h1, h2, h3, h4, .font-serif {
     font-size: 2rem;
   }
 }
+
+/* Auth Page dedicated view matching login.jpeg & reg.jpeg with NutriWise Palette */
+.auth-page-wrapper {
+  min-height: 100vh;
+  background-color: var(--color-cream);
+  background-image: radial-gradient(circle at 10% 20%, rgba(47, 99, 35, 0.05) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(199, 220, 91, 0.1) 0%, transparent 40%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 110px 24px 60px;
+}
+
+.auth-page-container {
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.auth-header-bar {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.btn-back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  padding: 10px 22px;
+  border-radius: 50px;
+  color: var(--color-dark);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: var(--transition-normal);
+}
+
+.btn-back-home:hover {
+  background-color: var(--color-forest);
+  color: #FFFFFF;
+  border-color: var(--color-forest);
+  transform: translateX(-4px);
+}
+
+/* Split Card Container */
+.auth-split-card {
+  width: 100%;
+  min-height: 560px;
+  background: #FFFFFF;
+  border-radius: 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Form Column */
+.auth-form-side {
+  padding: 56px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.auth-form-title {
+  font-family: var(--font-serif);
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--color-dark);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.auth-form-subtitle {
+  color: #94A3B8;
+  font-size: 0.92rem;
+  margin-bottom: 32px;
+}
+
+.auth-form-element {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.auth-input-group {
+  width: 100%;
+}
+
+.auth-pill-input {
+  width: 100%;
+  padding: 14px 22px;
+  background-color: #F1F5F9;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: var(--color-dark);
+  font-weight: 500;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.auth-pill-input:focus {
+  background-color: #FFFFFF;
+  border-color: var(--color-forest);
+  box-shadow: 0 0 0 3px rgba(47, 99, 35, 0.12);
+}
+
+.auth-forgot-link {
+  color: #64748B;
+  font-size: 0.88rem;
+  text-decoration: none;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  transition: color 0.2s ease;
+}
+
+.auth-forgot-link:hover {
+  color: var(--color-forest);
+  text-decoration: underline;
+}
+
+.btn-auth-primary {
+  width: 170px;
+  height: 48px;
+  background-color: var(--color-forest);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 18px rgba(47, 99, 35, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-auth-primary:hover {
+  background-color: #234B19;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(47, 99, 35, 0.35);
+}
+
+/* Banner Column with Curved Corner shape matching login.jpeg & reg.jpeg */
+.auth-banner-side {
+  background: linear-gradient(135deg, #2F6323 0%, #1E4416 100%);
+  color: #FFFFFF;
+  padding: 56px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Curved shape on right side (Login mode) matching login.jpeg */
+.banner-right-curve {
+  border-top-left-radius: 180px;
+  border-bottom-left-radius: 180px;
+}
+
+/* Curved shape on left side (Register mode) matching reg.jpeg */
+.banner-left-curve {
+  border-top-right-radius: 180px;
+  border-bottom-right-radius: 180px;
+}
+
+.banner-content {
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+
+.banner-title {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.banner-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.btn-auth-outline {
+  width: 170px;
+  height: 48px;
+  background: transparent;
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-auth-outline:hover {
+  background-color: #FFFFFF;
+  color: var(--color-forest);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.auth-alert {
+  width: 100%;
+  max-width: 340px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+}
+
+.alert-demo {
+  background-color: #FEF3C7;
+  border: 1px solid #F59E0B;
+  color: #92400E;
+}
+
+.alert-error {
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
+}
+
+.alert-success {
+  background-color: #ECFDF5;
+  border: 1px solid #6EE7B7;
+  color: #065F46;
+}
+
+.auth-footer-security {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #64748B;
+  margin-top: 12px;
+}
+
+/* Responsive adjustment for auth split card */
+@media (max-width: 768px) {
+  .auth-split-card {
+    grid-template-columns: 1fr;
+    border-radius: 20px;
+  }
+
+  .banner-right-curve,
+  .banner-left-curve {
+    border-radius: 0;
+  }
+
+  .auth-form-side,
+  .auth-banner-side {
+    padding: 40px 24px;
+  }
+}
