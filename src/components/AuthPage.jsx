@@ -83,13 +83,13 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
           {isLogin ? (
             /* ================= LOGIN FORM SIDE (LEFT) ================= */
             <div className="auth-form-side">
-              <h1 className="auth-form-title">Sign in</h1>
-              <p className="auth-form-subtitle">gunakan akun NutriWise Anda</p>
+              <h1 className="auth-form-title">Masuk</h1>
+              <p className="auth-form-subtitle">Gunakan akun NutriWise Anda</p>
 
               {!isSupabaseConfigured && (
                 <div className="auth-alert alert-demo">
                   <AlertCircle size={16} />
-                  <span>Mode Demo: Masukkan email & password bebas untuk uji coba.</span>
+                  <span>Mode Demo: Masukkan email &amp; kata sandi bebas untuk uji coba.</span>
                 </div>
               )}
 
@@ -112,7 +112,7 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
                   <input
                     type="email"
                     className="auth-pill-input"
-                    placeholder="Email"
+                    placeholder="Alamat Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -123,7 +123,7 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
                   <input
                     type="password"
                     className="auth-pill-input"
-                    placeholder="Password"
+                    placeholder="Kata Sandi"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -132,11 +132,11 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
                 </div>
 
                 <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Silakan hubungi admin atau gunakan email pemulihan.'); }} className="auth-forgot-link">
-                  Forgot your password?
+                  Lupa kata sandi Anda?
                 </a>
 
                 <button type="submit" className="btn-auth-primary" disabled={loading}>
-                  {loading ? 'MEMPROSES...' : 'SIGN IN'}
+                  {loading ? 'MEMPROSES...' : 'MASUK'}
                 </button>
               </form>
             </div>
@@ -144,16 +144,16 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
             /* ================= REGISTER BANNER SIDE (LEFT) ================= */
             <div className="auth-banner-side banner-left-curve">
               <div className="banner-content">
-                <h2 className="banner-title">Welcome Back!</h2>
+                <h2 className="banner-title">Selamat Datang Kembali!</h2>
                 <p className="banner-text">
-                  Enter your personal details to use all of site features
+                  Masukkan data akun Anda untuk kembali mengakses fitur &amp; 30-Day Challenge
                 </p>
                 <button 
                   type="button"
                   onClick={() => { setIsLogin(true); setErrorMsg(''); setSuccessMsg(''); }}
                   className="btn-auth-outline"
                 >
-                  SIGN IN
+                  MASUK
                 </button>
               </div>
             </div>
@@ -164,24 +164,24 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
             /* ================= LOGIN BANNER SIDE (RIGHT) ================= */
             <div className="auth-banner-side banner-right-curve">
               <div className="banner-content">
-                <h2 className="banner-title">Hello, Friend!</h2>
+                <h2 className="banner-title">Halo, Sahabat NutriWise!</h2>
                 <p className="banner-text">
-                  Register with your personal details to use all of site features
+                  Daftar dengan data diri Anda untuk menggunakan seluruh fitur pelacak nutrisi &amp; kesehatan
                 </p>
                 <button 
                   type="button"
                   onClick={() => { setIsLogin(false); setErrorMsg(''); setSuccessMsg(''); }}
                   className="btn-auth-outline"
                 >
-                  SIGN UP
+                  DAFTAR
                 </button>
               </div>
             </div>
           ) : (
             /* ================= REGISTER FORM SIDE (RIGHT) ================= */
             <div className="auth-form-side">
-              <h1 className="auth-form-title">Create Account</h1>
-              <p className="auth-form-subtitle">use your email for registration</p>
+              <h1 className="auth-form-title">Buat Akun</h1>
+              <p className="auth-form-subtitle">Gunakan email Anda untuk pendaftaran</p>
 
               {!isSupabaseConfigured && (
                 <div className="auth-alert alert-demo">
@@ -209,7 +209,7 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
                   <input
                     type="text"
                     className="auth-pill-input"
-                    placeholder="Name"
+                    placeholder="Nama Lengkap"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
@@ -220,7 +220,7 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
                   <input
                     type="email"
                     className="auth-pill-input"
-                    placeholder="Email"
+                    placeholder="Alamat Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -231,7 +231,7 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
                   <input
                     type="password"
                     className="auth-pill-input"
-                    placeholder="Password"
+                    placeholder="Kata Sandi"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -240,7 +240,7 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
                 </div>
 
                 <button type="submit" className="btn-auth-primary" disabled={loading} style={{ marginTop: '16px' }}>
-                  {loading ? 'MEMPROSES...' : 'SIGN UP'}
+                  {loading ? 'MEMPROSES...' : 'DAFTAR'}
                 </button>
               </form>
             </div>
