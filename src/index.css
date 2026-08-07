@@ -1436,8 +1436,22 @@ h1, h2, h3, h4, .font-serif {
 }
 
 .dashboard-main-view {
-  padding: 32px;
+  padding: 20px 32px 32px;
   flex: 1;
+}
+
+.dashboard-main-view .section {
+  padding: 0;
+}
+
+.dashboard-main-view .container {
+  padding: 0;
+  max-width: 100%;
+}
+
+.dashboard-main-view .section-title,
+.dashboard-main-view .section-subtitle {
+  display: none;
 }
 
 .dashboard-tab-pane {
