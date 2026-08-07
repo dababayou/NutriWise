@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, User, Mail, ShieldAlert, Check, Camera, Trash2, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, User, Mail, ShieldAlert, Check, Upload, Trash2, AlertTriangle } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const presetAvatars = [
@@ -17,6 +17,7 @@ export default function ProfileModal({ isOpen, onClose, currentUser, onUpdateUse
   const [avatarUrl, setAvatarUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const fileInputRef = useRef(null);
 
   // Delete Account Confirmation Modal States (2-Step Safety System)
   const [deleteStep, setDeleteStep] = useState(0); // 0 = none, 1 = first warning, 2 = type HAPUS confirm
@@ -35,6 +36,21 @@ export default function ProfileModal({ isOpen, onClose, currentUser, onUpdateUse
   }, [currentUser, isOpen]);
 
   if (!isOpen) return null;
+
+  const handleCustomFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage({ type: 'error', text: 'Ukuran foto maksimal 5MB.' });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
@@ -120,6 +136,8 @@ export default function ProfileModal({ isOpen, onClose, currentUser, onUpdateUse
     }
   };
 
+  const isCustomAvatar = !presetAvatars.includes(avatarUrl);
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card profile-modal-card" onClick={(e) => e.stopPropagation()}>
@@ -128,7 +146,7 @@ export default function ProfileModal({ isOpen, onClose, currentUser, onUpdateUse
         </button>
 
         <h3 className="profile-modal-title">Edit Profil Akun</h3>
-        <p className="profile-modal-subtitle">Perbarui data diri &amp; avatar NutriWise Anda</p>
+        <p className="profile-modal-subtitle">Perbarui data diri &amp; foto profil NutriWise Anda</p>
 
         {message.text && (
           <div className={`auth-alert ${message.type === 'success' ? 'alert-success' : 'alert-error'}`}>
@@ -144,7 +162,7 @@ export default function ProfileModal({ isOpen, onClose, currentUser, onUpdateUse
             </div>
 
             <div className="avatar-options">
-              <span className="avatar-picker-label">Pilih Avatar:</span>
+              <span className="avatar-picker-label">Pilih Avatar / Unggah Foto:</span>
               <div className="avatar-presets-grid">
                 {presetAvatars.map((url, idx) => (
                   <button
@@ -152,11 +170,31 @@ export default function ProfileModal({ isOpen, onClose, currentUser, onUpdateUse
                     type="button"
                     onClick={() => setAvatarUrl(url)}
                     className={`avatar-preset-btn ${avatarUrl === url ? 'selected' : ''}`}
+                    title={`Avatar Preset ${idx + 1}`}
                   >
                     <img src={url} alt={`Preset ${idx + 1}`} />
                     {avatarUrl === url && <Check size={12} className="avatar-check-icon" />}
                   </button>
                 ))}
+
+                {/* Custom File Upload Button */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`avatar-preset-btn custom-upload-btn ${isCustomAvatar ? 'selected' : ''}`}
+                  title="Unggah Foto Kustom"
+                >
+                  <Upload size={16} color="var(--color-forest)" />
+                  {isCustomAvatar && <Check size={12} className="avatar-check-icon" />}
+                </button>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleCustomFileUpload}
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                />
               </div>
             </div>
           </div>

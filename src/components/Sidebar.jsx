@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Calculator, Lightbulb, LogOut, User, Cloud, X } from 'lucide-react';
+import { Flame, Calculator, Lightbulb, LogOut, User, Edit3, X } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, currentUser, onLogout, mobileOpen, setMobileOpen, onOpenProfile }) {
   const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Pengguna NutriWise';
@@ -34,12 +34,11 @@ export default function Sidebar({ activeTab, setActiveTab, currentUser, onLogout
           </div>
         </div>
 
-        {/* User Profile Card (Clickable to Edit Profile) */}
+        {/* User Profile Card (Clean View & Hover Edit Overlay) */}
         <div 
           className="sidebar-user-card" 
           onClick={onOpenProfile}
           title="Klik untuk Edit Profil"
-          style={{ cursor: 'pointer', transition: 'transform 0.2s ease' }}
         >
           <div className="sidebar-avatar">
             {avatarUrl ? (
@@ -51,9 +50,12 @@ export default function Sidebar({ activeTab, setActiveTab, currentUser, onLogout
           <div className="sidebar-user-info">
             <div className="sidebar-user-name">{displayName}</div>
             <div className="sidebar-user-email">{email}</div>
-            <div className="sidebar-user-badge">
-              <Cloud size={12} /> Edit Profil
-            </div>
+          </div>
+          
+          {/* Hover Overlay */}
+          <div className="sidebar-user-overlay">
+            <Edit3 size={16} />
+            <span>Edit Profil</span>
           </div>
         </div>
 
