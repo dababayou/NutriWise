@@ -17,6 +17,7 @@ export default function App() {
   const [currentView, setCurrentView] = useState('home'); // 'home' | 'auth'
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
   const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     // Sync URL hash for page navigation (#auth, #login, #register)
@@ -39,19 +40,25 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // Sync Supabase Auth Session on mount
+    // Sync Supabase Auth Session on mount without split-second landing page flash
     if (isSupabaseConfigured && supabase) {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
           setCurrentUser(session.user);
         }
+        setAuthLoading(false);
+      }).catch(() => {
+        setAuthLoading(false);
       });
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         setCurrentUser(session?.user ?? null);
+        setAuthLoading(false);
       });
 
       return () => subscription.unsubscribe();
+    } else {
+      setAuthLoading(false);
     }
   }, []);
 
@@ -74,8 +81,27 @@ export default function App() {
     }
     localStorage.removeItem('nutriwise_days');
     localStorage.removeItem('nutriwise_today_habits');
+    localStorage.removeItem('nutriwise_active_tab');
     setCurrentUser(null);
   };
+
+  if (authLoading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#FAF9F6',
+        color: '#2F6323'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+          <img src="/dino_logo.png" alt="NutriWise" style={{ width: '56px', height: '56px' }} />
+          <span style={{ fontWeight: 700, fontSize: '1rem', color: '#2F6323', fontFamily: 'var(--font-serif)' }}>Memuat NutriWise...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">

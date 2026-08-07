@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Kalkulator from './Kalkulator';
 import Challenge30Days from './Challenge30Days';
@@ -6,8 +6,35 @@ import MitosFakta from './MitosFakta';
 import { Menu, ShieldCheck } from 'lucide-react';
 
 export default function DashboardLayout({ currentUser, onLogout, onOpenPrivacy, onOpenProfile }) {
-  const [activeTab, setActiveTab] = useState('challenge'); // 'challenge' | 'kalkulator' | 'mitos'
+  const [activeTab, setActiveTabState] = useState(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (['challenge', 'kalkulator', 'mitos'].includes(hash)) {
+      return hash;
+    }
+    const saved = localStorage.getItem('nutriwise_active_tab');
+    return saved && ['challenge', 'kalkulator', 'mitos'].includes(saved) ? saved : 'challenge';
+  });
+
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    localStorage.setItem('nutriwise_active_tab', tab);
+    window.location.hash = `#${tab}`;
+  };
+
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (['challenge', 'kalkulator', 'mitos'].includes(hash)) {
+        setActiveTabState(hash);
+        localStorage.setItem('nutriwise_active_tab', hash);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
 
   return (
     <div className="dashboard-wrapper">
