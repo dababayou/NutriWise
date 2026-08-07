@@ -6,6 +6,7 @@ import MitosFakta from './components/MitosFakta';
 import Challenge30Days from './components/Challenge30Days';
 import PrivacyModal from './components/PrivacyModal';
 import AuthPage from './components/AuthPage';
+import DashboardLayout from './components/DashboardLayout';
 import Footer from './components/Footer';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 
@@ -74,16 +75,7 @@ export default function App() {
 
   return (
     <div className="app">
-      {currentView !== 'auth' && (
-        <Navbar 
-          onOpenPrivacy={() => setPrivacyOpen(true)}
-          onOpenAuth={() => handleOpenAuth('login')}
-          currentUser={currentUser}
-          onLogout={handleLogout}
-          onNavigateHome={handleBackHome}
-        />
-      )}
-      
+      {/* 1. Auth Page View (Dedicated Full Window) */}
       {currentView === 'auth' ? (
         <AuthPage 
           initialMode={authMode}
@@ -93,38 +85,54 @@ export default function App() {
             handleBackHome();
           }}
         />
+      ) : currentUser ? (
+        /* 2. Logged-In User View (Sidebar Dashboard - 1 Feature Per Page, No Hero) */
+        <DashboardLayout 
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          onOpenPrivacy={() => setPrivacyOpen(true)}
+        />
       ) : (
-        <main>
-          <Hero />
-          <Kalkulator currentUser={currentUser} />
-          <MitosFakta />
-          <Challenge30Days currentUser={currentUser} onOpenAuth={() => handleOpenAuth('login')} />
-          
-          {/* SDG 3 Impact Highlight Card */}
-          <section className="container" style={{ margin: '60px auto' }}>
-            <div className="privacy-banner">
-              <div className="privacy-info">
-                <h3>SDG Subtema 2: Kehidupan Sehat dan Sejahtera</h3>
-                <p>
-                  NutriWise menghadirkan solusi teknologi digital yang terukur untuk pencegahan masalah nutrisi, obesitas, dan krisis dehidrasi. Kami memberdayakan masyarakat dengan pengetahuan yang valid dan pelacakan kebiasaan sehat berbasis data.
-                </p>
+        /* 3. Public Guest View (Landing Page with Hero & Single Page Scrolling) */
+        <>
+          <Navbar 
+            onOpenPrivacy={() => setPrivacyOpen(true)}
+            onOpenAuth={() => handleOpenAuth('login')}
+            currentUser={currentUser}
+            onLogout={handleLogout}
+            onNavigateHome={handleBackHome}
+          />
+
+          <main>
+            <Hero />
+            <Kalkulator currentUser={currentUser} />
+            <MitosFakta />
+            <Challenge30Days currentUser={currentUser} onOpenAuth={() => handleOpenAuth('login')} />
+            
+            {/* SDG 3 Impact Highlight Card */}
+            <section className="container" style={{ margin: '60px auto' }}>
+              <div className="privacy-banner">
+                <div className="privacy-info">
+                  <h3>SDG Subtema 2: Kehidupan Sehat dan Sejahtera</h3>
+                  <p>
+                    NutriWise menghadirkan solusi teknologi digital yang terukur untuk pencegahan masalah nutrisi, obesitas, dan krisis dehidrasi. Kami memberdayakan masyarakat dengan pengetahuan yang valid dan pelacakan kebiasaan sehat berbasis data.
+                  </p>
+                </div>
+                <button 
+                  className="btn-cta-outline" 
+                  style={{ borderColor: '#C7DC5B', color: '#C7DC5B' }}
+                  onClick={() => setPrivacyOpen(true)}
+                >
+                  Lihat Standar Privasi Data
+                </button>
               </div>
-              <button 
-                className="btn-cta-outline" 
-                style={{ borderColor: '#C7DC5B', color: '#C7DC5B' }}
-                onClick={() => setPrivacyOpen(true)}
-              >
-                Lihat Standar Privasi Data
-              </button>
-            </div>
-          </section>
-        </main>
+            </section>
+          </main>
+
+          <Footer onOpenPrivacy={() => setPrivacyOpen(true)} />
+        </>
       )}
 
-      {currentView !== 'auth' && (
-        <Footer onOpenPrivacy={() => setPrivacyOpen(true)} />
-      )}
-      
       <PrivacyModal 
         isOpen={privacyOpen} 
         onClose={() => setPrivacyOpen(false)} 
