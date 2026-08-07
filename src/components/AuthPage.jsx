@@ -24,7 +24,11 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
           const mockUser = {
             id: 'demo-user-123',
             email: email || 'demo@nutriwise.id',
-            user_metadata: { full_name: fullName || email.split('@')[0] || 'Pengguna NutriWise' }
+            user_metadata: { 
+              full_name: fullName || email.split('@')[0] || 'Pengguna NutriWise',
+              nutriwise_days: [],
+              nutriwise_today_habits: {}
+            }
           };
           setSuccessMsg('Berhasil masuk mode demo!');
           onAuthSuccess(mockUser);

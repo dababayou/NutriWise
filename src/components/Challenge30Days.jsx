@@ -11,32 +11,28 @@ const defaultHabits = [
 ];
 
 export default function Challenge30Days({ currentUser, onOpenAuth }) {
-  const [completedDays, setCompletedDays] = useState(() => {
-    const saved = localStorage.getItem('nutriwise_days');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [todayHabits, setTodayHabits] = useState(() => {
-    const saved = localStorage.getItem('nutriwise_today_habits');
-    return saved ? JSON.parse(saved) : {};
-  });
-
+  const [completedDays, setCompletedDays] = useState([]);
+  const [todayHabits, setTodayHabits] = useState({});
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   // Sync from Supabase Cloud on login
   useEffect(() => {
-    if (currentUser?.user_metadata) {
-      const cloudDays = currentUser.user_metadata.nutriwise_days;
-      const cloudHabits = currentUser.user_metadata.nutriwise_today_habits;
+    if (currentUser) {
+      const cloudDays = currentUser.user_metadata?.nutriwise_days;
+      const cloudHabits = currentUser.user_metadata?.nutriwise_today_habits;
       
-      if (Array.isArray(cloudDays)) {
-        setCompletedDays(cloudDays);
-        localStorage.setItem('nutriwise_days', JSON.stringify(cloudDays));
-      }
-      if (cloudHabits && typeof cloudHabits === 'object') {
-        setTodayHabits(cloudHabits);
-        localStorage.setItem('nutriwise_today_habits', JSON.stringify(cloudHabits));
-      }
+      const daysToSet = Array.isArray(cloudDays) ? cloudDays : [];
+      const habitsToSet = (cloudHabits && typeof cloudHabits === 'object') ? cloudHabits : {};
+
+      setCompletedDays(daysToSet);
+      setTodayHabits(habitsToSet);
+      localStorage.setItem('nutriwise_days', JSON.stringify(daysToSet));
+      localStorage.setItem('nutriwise_today_habits', JSON.stringify(habitsToSet));
+    } else {
+      setCompletedDays([]);
+      setTodayHabits({});
+      localStorage.removeItem('nutriwise_days');
+      localStorage.removeItem('nutriwise_today_habits');
     }
   }, [currentUser]);
 

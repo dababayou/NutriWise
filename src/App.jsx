@@ -70,6 +70,8 @@ export default function App() {
     if (isSupabaseConfigured && supabase) {
       await supabase.auth.signOut();
     }
+    localStorage.removeItem('nutriwise_days');
+    localStorage.removeItem('nutriwise_today_habits');
     setCurrentUser(null);
   };
 
