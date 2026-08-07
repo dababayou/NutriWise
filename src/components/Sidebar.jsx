@@ -1,9 +1,10 @@
 import React from 'react';
 import { Flame, Calculator, Lightbulb, LogOut, User, Cloud, X } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, currentUser, onLogout, mobileOpen, setMobileOpen }) {
+export default function Sidebar({ activeTab, setActiveTab, currentUser, onLogout, mobileOpen, setMobileOpen, onOpenProfile }) {
   const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Pengguna NutriWise';
   const email = currentUser?.email || 'user@nutriwise.id';
+  const avatarUrl = currentUser?.user_metadata?.avatar_url;
 
   const menuItems = [
     { id: 'challenge', label: '30-Day Challenge', icon: Flame },
@@ -33,16 +34,25 @@ export default function Sidebar({ activeTab, setActiveTab, currentUser, onLogout
           </div>
         </div>
 
-        {/* User Profile Card */}
-        <div className="sidebar-user-card">
+        {/* User Profile Card (Clickable to Edit Profile) */}
+        <div 
+          className="sidebar-user-card" 
+          onClick={onOpenProfile}
+          title="Klik untuk Edit Profil"
+          style={{ cursor: 'pointer', transition: 'transform 0.2s ease' }}
+        >
           <div className="sidebar-avatar">
-            <User size={20} color="#2F6323" />
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+            ) : (
+              <User size={20} color="#2F6323" />
+            )}
           </div>
           <div className="sidebar-user-info">
             <div className="sidebar-user-name">{displayName}</div>
             <div className="sidebar-user-email">{email}</div>
             <div className="sidebar-user-badge">
-              <Cloud size={12} /> Cloud Sync
+              <Cloud size={12} /> Edit Profil
             </div>
           </div>
         </div>

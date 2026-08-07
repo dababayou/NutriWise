@@ -5,7 +5,7 @@ import Challenge30Days from './Challenge30Days';
 import MitosFakta from './MitosFakta';
 import { Menu, ShieldCheck } from 'lucide-react';
 
-export default function DashboardLayout({ currentUser, onLogout, onOpenPrivacy }) {
+export default function DashboardLayout({ currentUser, onLogout, onOpenPrivacy, onOpenProfile }) {
   const [activeTab, setActiveTab] = useState('challenge'); // 'challenge' | 'kalkulator' | 'mitos'
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -19,6 +19,7 @@ export default function DashboardLayout({ currentUser, onLogout, onOpenPrivacy }
         onLogout={onLogout}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
+        onOpenProfile={onOpenProfile}
       />
 
       {/* Main Content Viewport */}

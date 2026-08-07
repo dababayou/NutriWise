@@ -5,6 +5,7 @@ import Kalkulator from './components/Kalkulator';
 import MitosFakta from './components/MitosFakta';
 import Challenge30Days from './components/Challenge30Days';
 import PrivacyModal from './components/PrivacyModal';
+import ProfileModal from './components/ProfileModal';
 import AuthPage from './components/AuthPage';
 import DashboardLayout from './components/DashboardLayout';
 import Footer from './components/Footer';
@@ -12,6 +13,7 @@ import { supabase, isSupabaseConfigured } from './lib/supabase';
 
 export default function App() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [currentView, setCurrentView] = useState('home'); // 'home' | 'auth'
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
   const [currentUser, setCurrentUser] = useState(null);
@@ -93,6 +95,7 @@ export default function App() {
           currentUser={currentUser}
           onLogout={handleLogout}
           onOpenPrivacy={() => setPrivacyOpen(true)}
+          onOpenProfile={() => setProfileOpen(true)}
         />
       ) : (
         /* 3. Public Guest View (Landing Page with Hero & Single Page Scrolling) */
@@ -138,6 +141,14 @@ export default function App() {
       <PrivacyModal 
         isOpen={privacyOpen} 
         onClose={() => setPrivacyOpen(false)} 
+      />
+
+      <ProfileModal
+        isOpen={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        currentUser={currentUser}
+        onUpdateUser={(updatedUser) => setCurrentUser(updatedUser)}
+        onAccountDeleted={handleLogout}
       />
     </div>
   );
