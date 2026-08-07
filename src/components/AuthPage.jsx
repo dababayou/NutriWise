@@ -54,10 +54,23 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
           }
         });
         if (error) throw error;
-        setSuccessMsg('Pendaftaran berhasil! Mengalihkan ke beranda...');
-        if (data.user) {
-          onAuthSuccess(data.user);
-          setTimeout(() => onBackHome(), 1000);
+
+        // Auto-login user immediately without requiring email verification
+        let userToAuth = data.user;
+        if (!data.session) {
+          const { data: signInData } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
+          if (signInData?.user) {
+            userToAuth = signInData.user;
+          }
+        }
+
+        setSuccessMsg('Pendaftaran berhasil! Mengalihkan...');
+        if (userToAuth) {
+          onAuthSuccess(userToAuth);
+          setTimeout(() => onBackHome(), 800);
         }
       }
     } catch (err) {
