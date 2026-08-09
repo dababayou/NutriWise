@@ -1,40 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ClipboardCheck, ArrowRight, Activity, Flame, Droplets } from 'lucide-react';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
-export default function Kalkulator() {
+export default function Kalkulator({ currentUser, onNavigateToQuiz }) {
   // BMI State
-  const [bmiWeight, setBmiWeight] = useState(67);
-  const [bmiHeight, setBmiHeight] = useState(170);
-  const [bmiResult, setBmiResult] = useState({ bmi: '23,2', category: 'Berat Badan Normal / Sehat' });
+  const [bmiWeight, setBmiWeight] = useState('');
+  const [bmiHeight, setBmiHeight] = useState('');
+  const [bmiResult, setBmiResult] = useState(null); // { bmi: '23,2', category: '...', points: 0 }
 
   // Calorie State
-  const [calWeight, setCalWeight] = useState(67);
-  const [calHeight, setCalHeight] = useState(170);
-  const [calAge, setCalAge] = useState(22);
+  const [calWeight, setCalWeight] = useState('');
+  const [calHeight, setCalHeight] = useState('');
+  const [calAge, setCalAge] = useState('');
   const [calGender, setCalGender] = useState('Pria');
-  const [calActivity, setCalActivity] = useState('1.375'); // Ringan-Sedang
-  const [calResult, setCalResult] = useState({ calories: 2222, bmr: 1616 });
+  const [calActivity, setCalActivity] = useState('1.375');
+  const [calResult, setCalResult] = useState(null); // { calories: 2222, bmr: 1616 }
 
   // Water State
-  const [waterWeight, setWaterWeight] = useState(67);
+  const [waterWeight, setWaterWeight] = useState('');
   const [waterActivity, setWaterActivity] = useState('santai');
-  const [waterResult, setWaterResult] = useState({ liters: '2,5', glasses: 10 });
+  const [waterResult, setWaterResult] = useState(null); // { liters: '2,5', glasses: 10 }
+
+  // Load existing calculated BMI on mount
+  useEffect(() => {
+    const meta = currentUser?.user_metadata || {};
+    const savedBmi = meta.nutriwise_bmi_data || JSON.parse(localStorage.getItem('nutriwise_bmi_data') || 'null');
+    if (savedBmi) {
+      setBmiResult(savedBmi);
+    }
+  }, [currentUser]);
 
   // Calculate BMI
-  const handleCalcBmi = (e) => {
+  const handleCalcBmi = async (e) => {
     e.preventDefault();
     const w = parseFloat(bmiWeight);
     const h = parseFloat(bmiHeight) / 100;
-    if (w > 0 && h > 0) {
-      const val = (w / (h * h)).toFixed(1);
-      let cat = 'Normal / Sehat';
-      if (val < 18.5) cat = 'Kurus / Berat Kurang';
-      else if (val >= 25 && val < 29.9) cat = 'Kelebihan Berat Badan';
-      else if (val >= 30) cat = 'Obesitas';
 
-      setBmiResult({
-        bmi: val.replace('.', ','),
-        category: cat
-      });
+    if (w > 0 && h > 0) {
+      const valNum = parseFloat((w / (h * h)).toFixed(1));
+      let cat = 'Berat Badan Normal / Sehat';
+      let points = 0;
+      let rawCat = '18.5-24.9 (Normal)';
+
+      if (valNum < 18.5) {
+        cat = 'Kurus / Berat Kurang (Underweight)';
+        points = 1;
+        rawCat = '<18.5 (Underweight)';
+      } else if (valNum >= 25 && valNum < 29.9) {
+        cat = 'Kelebihan Berat Badan (Overweight)';
+        points = 3;
+        rawCat = '25-29.9 (Overweight)';
+      } else if (valNum >= 30) {
+        cat = 'Obesitas (Obese)';
+        points = 5;
+        rawCat = '≥30 (Obesitas)';
+      }
+
+      const resultObj = {
+        bmi: String(valNum).replace('.', ','),
+        numericVal: valNum,
+        category: cat,
+        rawCategory: rawCat,
+        points: points,
+        weight: w,
+        height: parseFloat(bmiHeight),
+        date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+      };
+
+      setBmiResult(resultObj);
+      localStorage.setItem('nutriwise_bmi_data', JSON.stringify(resultObj));
+
+      if (currentUser && isSupabaseConfigured && supabase) {
+        try {
+          await supabase.auth.updateUser({
+            data: { nutriwise_bmi_data: resultObj }
+          });
+        } catch (err) {
+          console.error('Gagal menyimpan BMI ke Supabase:', err);
+        }
+      }
     }
   };
 
@@ -63,7 +107,6 @@ export default function Kalkulator() {
     e.preventDefault();
     const w = parseFloat(waterWeight);
     if (w > 0) {
-      // Base: 35ml per kg
       let baseMl = w * 35;
       if (waterActivity === 'sedang') baseMl += 400;
       if (waterActivity === 'berat') baseMl += 800;
@@ -90,7 +133,7 @@ export default function Kalkulator() {
         <div className="calc-card">
           <div>
             <div className="calc-header">
-              <h3 className="calc-title">Indeks Massa Tubuh</h3>
+              <h3 className="calc-title">Indeks Massa Tubuh (BMI)</h3>
             </div>
             <form onSubmit={handleCalcBmi}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -98,7 +141,9 @@ export default function Kalkulator() {
                   <label className="form-label">Berat (kg)</label>
                   <input
                     type="number"
+                    step="0.1"
                     className="form-input"
+                    placeholder="Contoh: 65"
                     value={bmiWeight}
                     onChange={(e) => setBmiWeight(e.target.value)}
                     required
@@ -108,7 +153,9 @@ export default function Kalkulator() {
                   <label className="form-label">Tinggi (cm)</label>
                   <input
                     type="number"
+                    step="0.1"
                     className="form-input"
+                    placeholder="Contoh: 170"
                     value={bmiHeight}
                     onChange={(e) => setBmiHeight(e.target.value)}
                     required
@@ -122,8 +169,26 @@ export default function Kalkulator() {
           </div>
 
           <div className="calc-result-box">
-            <div className="result-number">{bmiResult.bmi}</div>
-            <div className="result-subtitle">{bmiResult.category}</div>
+            <div className="result-number">{bmiResult ? bmiResult.bmi : '-'}</div>
+            <div className="result-subtitle">{bmiResult ? bmiResult.category : 'Belum dihitung'}</div>
+
+            {/* CTA Button to Quiz after BMI is calculated */}
+            {bmiResult && (
+              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(47, 99, 35, 0.15)' }}>
+                <button
+                  onClick={onNavigateToQuiz}
+                  className="btn-nav-combined"
+                  style={{ width: '100%', padding: '10px 16px', fontSize: '0.85rem' }}
+                >
+                  <span className="btn-text-default" style={{ gap: '6px' }}>
+                    <ClipboardCheck size={16} /> Lanjut ke Kuis Skrining PTM
+                  </span>
+                  <span className="btn-text-hover" style={{ gap: '6px' }}>
+                    <ClipboardCheck size={16} /> Lanjut ke Kuis Skrining PTM <ArrowRight size={14} />
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -139,7 +204,9 @@ export default function Kalkulator() {
                   <label className="form-label">Berat (kg)</label>
                   <input
                     type="number"
+                    step="0.1"
                     className="form-input"
+                    placeholder="Contoh: 65"
                     value={calWeight}
                     onChange={(e) => setCalWeight(e.target.value)}
                     required
@@ -149,7 +216,9 @@ export default function Kalkulator() {
                   <label className="form-label">Tinggi (cm)</label>
                   <input
                     type="number"
+                    step="0.1"
                     className="form-input"
+                    placeholder="Contoh: 170"
                     value={calHeight}
                     onChange={(e) => setCalHeight(e.target.value)}
                     required
@@ -163,6 +232,7 @@ export default function Kalkulator() {
                   <input
                     type="number"
                     className="form-input"
+                    placeholder="Contoh: 22"
                     value={calAge}
                     onChange={(e) => setCalAge(e.target.value)}
                     required
@@ -202,9 +272,9 @@ export default function Kalkulator() {
           </div>
 
           <div className="calc-result-box">
-            <div className="result-number">{calResult.calories} kkal</div>
+            <div className="result-number">{calResult ? `${calResult.calories} kkal` : '-'}</div>
             <div className="result-subtitle">
-              BMR dasar: {calResult.bmr} kkal/hari • disesuaikan aktivitas
+              {calResult ? `BMR dasar: ${calResult.bmr} kkal/hari • disesuaikan aktivitas` : 'Belum dihitung'}
             </div>
           </div>
         </div>
@@ -220,7 +290,9 @@ export default function Kalkulator() {
                 <label className="form-label">Berat Badan (kg)</label>
                 <input
                   type="number"
+                  step="0.1"
                   className="form-input"
+                  placeholder="Contoh: 65"
                   value={waterWeight}
                   onChange={(e) => setWaterWeight(e.target.value)}
                   required
@@ -247,9 +319,9 @@ export default function Kalkulator() {
           </div>
 
           <div className="calc-result-box">
-            <div className="result-number">{waterResult.liters} liter</div>
+            <div className="result-number">{waterResult ? `${waterResult.liters} liter` : '-'}</div>
             <div className="result-subtitle">
-              = {waterResult.glasses} gelas (250 ml) per hari
+              {waterResult ? `= ${waterResult.glasses} gelas (250 ml) per hari` : 'Belum dihitung'}
             </div>
           </div>
         </div>

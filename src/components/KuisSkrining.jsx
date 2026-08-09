@@ -1,26 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardCheck, CheckCircle2, AlertTriangle, ArrowRight, RotateCcw, Activity, Heart, ShieldAlert, Zap, Info } from 'lucide-react';
+import { ClipboardCheck, CheckCircle2, AlertTriangle, ArrowRight, RotateCcw, Activity, Heart, ShieldAlert, Zap, Info, Lock, Calculator } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
+// 9 Questions (Q2 through Q10 from document; Q1 BMI is auto-pulled from Kalkulator)
 const quizQuestions = [
-  {
-    id: 'bmi',
-    category: 'Data Otomatis',
-    categoryLabel: 'A. Indeks Massa Tubuh',
-    question: '1. Apa kategori Indeks Massa Tubuh (BMI) Anda saat ini?',
-    note: 'Berdasarkan tinggi & berat badan Anda. Bisa dihitung ulang di Kalkulator.',
-    options: [
-      { text: '< 18,5 (Berat Kurang / Underweight)', points: 1, trigger: 'Q1' },
-      { text: '18,5 – 24,9 (Berat Normal / Sehat)', points: 0, trigger: null },
-      { text: '25 – 29,9 (Kelebihan Berat / Overweight)', points: 3, trigger: 'Q1' },
-      { text: '≥ 30 (Obesitas)', points: 5, trigger: 'Q1' }
-    ]
-  },
   {
     id: 'veggies',
     category: 'Pola Makan',
     categoryLabel: 'B. Pola Makan & Konsumsi Harian',
-    question: '2. Seberapa sering Anda makan sayur dan buah dalam seminggu?',
+    question: '1. Seberapa sering Anda makan sayur dan buah dalam seminggu?',
     options: [
       { text: 'Setiap hari (≥5 porsi / hari)', points: 0, trigger: null },
       { text: '3–6 hari seminggu', points: 1, trigger: null },
@@ -32,7 +20,7 @@ const quizQuestions = [
     id: 'sweet_drinks',
     category: 'Pola Makan',
     categoryLabel: 'B. Pola Makan & Konsumsi Harian',
-    question: '3. Seberapa sering Anda minum minuman manis (boba, soda, kopi manis, teh kemasan)?',
+    question: '2. Seberapa sering Anda minum minuman manis (boba, soda, kopi manis, teh kemasan)?',
     options: [
       { text: 'Jarang / tidak pernah', points: 0, trigger: null },
       { text: '1–2x seminggu', points: 1, trigger: null },
@@ -44,7 +32,7 @@ const quizQuestions = [
     id: 'fast_food',
     category: 'Pola Makan',
     categoryLabel: 'B. Pola Makan & Konsumsi Harian',
-    question: '4. Seberapa sering Anda makan gorengan atau makanan cepat saji (fast food)?',
+    question: '3. Seberapa sering Anda makan gorengan atau makanan cepat saji (fast food)?',
     options: [
       { text: 'Jarang / tidak pernah', points: 0, trigger: null },
       { text: '1–2x seminggu', points: 1, trigger: null },
@@ -56,7 +44,7 @@ const quizQuestions = [
     id: 'salty_food',
     category: 'Pola Makan',
     categoryLabel: 'B. Pola Makan & Konsumsi Harian',
-    question: '5. Seberapa sering Anda menambahkan garam/kecap/penyedap ekstra ke makanan?',
+    question: '4. Seberapa sering Anda menambahkan garam/kecap/penyedap ekstra ke makanan?',
     options: [
       { text: 'Jarang / tidak pernah', points: 0, trigger: null },
       { text: 'Kadang-kadang', points: 1, trigger: null },
@@ -67,7 +55,7 @@ const quizQuestions = [
     id: 'activity',
     category: 'Aktivitas Fisik',
     categoryLabel: 'C. Aktivitas Fisik',
-    question: '6. Berapa hari dalam seminggu Anda beraktivitas fisik minimal 30 menit (jalan cepat, olahraga)?',
+    question: '5. Berapa hari dalam seminggu Anda beraktivitas fisik minimal 30 menit (jalan cepat, olahraga)?',
     options: [
       { text: '5 hari atau lebih (Memenuhi standar WHO 150 mnt/minggu)', points: 0, trigger: null },
       { text: '3–4 hari', points: 1, trigger: null },
@@ -79,7 +67,7 @@ const quizQuestions = [
     id: 'family_history',
     category: 'Riwayat Risiko',
     categoryLabel: 'D. Riwayat & Faktor Risiko Tambahan',
-    question: '7. Apakah ada keluarga inti (orang tua/saudara) dengan riwayat diabetes, hipertensi, atau jantung?',
+    question: '6. Apakah ada keluarga inti (orang tua/saudara) dengan riwayat diabetes, hipertensi, atau jantung?',
     options: [
       { text: 'Tidak ada', points: 0, trigger: null },
       { text: 'Ada 1 jenis penyakit', points: 2, trigger: 'Q7' },
@@ -90,7 +78,7 @@ const quizQuestions = [
     id: 'smoking',
     category: 'Riwayat Risiko',
     categoryLabel: 'D. Riwayat & Faktor Risiko Tambahan',
-    question: '8. Apakah Anda merokok aktif atau sering terpapar asap rokok (perokok pasif)?',
+    question: '7. Apakah Anda merokok aktif atau sering terpapar asap rokok (perokok pasif)?',
     options: [
       { text: 'Tidak keduanya', points: 0, trigger: null },
       { text: 'Perokok pasif saja', points: 2, trigger: 'Q8' },
@@ -101,7 +89,7 @@ const quizQuestions = [
     id: 'sleep',
     category: 'Riwayat Risiko',
     categoryLabel: 'D. Riwayat & Faktor Risiko Tambahan',
-    question: '9. Berapa jam rata-rata Anda tidur per malam?',
+    question: '8. Berapa jam rata-rata Anda tidur per malam?',
     options: [
       { text: '7–8 jam (Durasi optimal)', points: 0, trigger: null },
       { text: '6 jam atau ≥9 jam', points: 1, trigger: null },
@@ -112,7 +100,7 @@ const quizQuestions = [
     id: 'stress',
     category: 'Riwayat Risiko',
     categoryLabel: 'D. Riwayat & Faktor Risiko Tambahan',
-    question: '10. Bagaimana Anda menilai tingkat stres dalam keseharian (kerja/kuliah)?',
+    question: '9. Bagaimana Anda menilai tingkat stres dalam keseharian (kerja/kuliah)?',
     options: [
       { text: 'Rendah (jarang merasa tertekan)', points: 0, trigger: null },
       { text: 'Sedang (kadang tertekan)', points: 1, trigger: null },
@@ -134,15 +122,23 @@ const focusAdviceBank = {
   Q10: 'kelola tingkat stres dengan teknik relaksasi, olahraga ringan, atau istirahat cukup'
 };
 
-export default function KuisSkrining({ currentUser }) {
-  const [currentStep, setCurrentStep] = useState(0); // 0 = Intro, 1..10 = questions, 11 = Result
+export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
+  const [currentStep, setCurrentStep] = useState(0); // 0 = Intro, 1..9 = questions, 10 = Result
   const [answers, setAnswers] = useState({});
   const [savedQuizResult, setSavedQuizResult] = useState(null);
+  const [userBmiData, setUserBmiData] = useState(null);
 
-  // Load existing quiz result from user metadata or local storage
+  // Load existing BMI and quiz result from user metadata or local storage
   useEffect(() => {
-    if (currentUser?.user_metadata?.nutriwise_quiz_result) {
-      setSavedQuizResult(currentUser.user_metadata.nutriwise_quiz_result);
+    const meta = currentUser?.user_metadata || {};
+    
+    // Load BMI Data
+    const bmiData = meta.nutriwise_bmi_data || JSON.parse(localStorage.getItem('nutriwise_bmi_data') || 'null');
+    setUserBmiData(bmiData);
+
+    // Load Quiz Result
+    if (meta.nutriwise_quiz_result) {
+      setSavedQuizResult(meta.nutriwise_quiz_result);
     } else {
       const local = localStorage.getItem('nutriwise_quiz_result');
       if (local) {
@@ -173,13 +169,19 @@ export default function KuisSkrining({ currentUser }) {
   };
 
   const calculateAndShowResult = async () => {
-    let totalScore = 0;
+    // Start with auto-pulled BMI points
+    const bmiPoints = userBmiData?.points || 0;
+    let totalScore = bmiPoints;
     const triggers = [];
 
+    if (bmiPoints > 0) {
+      triggers.push('Q1');
+    }
+
     // Sub-categories scores
-    let metabolicPoints = 0; // Q1 + Q3 + Q6
-    let cardioPoints = 0;    // Q4 + Q5 + Q8 + Q10
-    let lifestylePoints = 0; // Q9 + Q7
+    let metabolicPoints = bmiPoints; // Auto Q1 + Q2 (sweets) + Q5 (activity)
+    let cardioPoints = 0;           // Q3 (fast food) + Q4 (salt) + Q7 (smoking) + Q9 (stress)
+    let lifestylePoints = 0;        // Q6 (family) + Q8 (sleep)
 
     Object.keys(answers).forEach((idxStr) => {
       const idx = parseInt(idxStr);
@@ -190,10 +192,19 @@ export default function KuisSkrining({ currentUser }) {
           triggers.push(opt.trigger);
         }
 
-        // Question mapping for sub-risk
-        if (idx === 0 || idx === 2 || idx === 5) metabolicPoints += opt.points;
-        if (idx === 3 || idx === 4 || idx === 7 || idx === 9) cardioPoints += opt.points;
-        if (idx === 6 || idx === 8) lifestylePoints += opt.points;
+        // Mapping 9 questions (0-indexed):
+        // 0: veggies (Q2) -> metabolic
+        // 1: sweets (Q3) -> metabolic
+        // 2: fast food (Q4) -> cardio
+        // 3: salt (Q5) -> cardio
+        // 4: activity (Q6) -> metabolic
+        // 5: family (Q7) -> lifestyle
+        // 6: smoking (Q8) -> cardio
+        // 7: sleep (Q9) -> lifestyle
+        // 8: stress (Q10) -> cardio
+        if (idx === 0 || idx === 1 || idx === 4) metabolicPoints += opt.points;
+        if (idx === 2 || idx === 3 || idx === 6 || idx === 8) cardioPoints += opt.points;
+        if (idx === 5 || idx === 7) lifestylePoints += opt.points;
       }
     });
 
@@ -229,6 +240,7 @@ export default function KuisSkrining({ currentUser }) {
       colorClass,
       badgeColor,
       summaryText,
+      bmiInfo: userBmiData ? `${userBmiData.bmi} (${userBmiData.rawCategory})` : 'Tidk ada',
       metabolicPoints,
       cardioPoints,
       lifestylePoints,
@@ -237,7 +249,7 @@ export default function KuisSkrining({ currentUser }) {
     };
 
     setSavedQuizResult(resultObj);
-    setCurrentStep(11);
+    setCurrentStep(10);
     localStorage.setItem('nutriwise_quiz_result', JSON.stringify(resultObj));
 
     // Save to Supabase user_metadata if configured
@@ -252,6 +264,42 @@ export default function KuisSkrining({ currentUser }) {
     }
   };
 
+  // ================= LOCKED STATE: IF BMI HAS NOT BEEN CALCULATED YET =================
+  if (!userBmiData) {
+    return (
+      <div className="quiz-container">
+        <div className="quiz-card" style={{ textAlign: 'center', padding: '48px 32px' }}>
+          <div style={{ width: '72px', height: '72px', background: 'rgba(239, 68, 68, 0.12)', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+            <Lock size={36} color="#DC2626" />
+          </div>
+
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.8rem', fontWeight: 800, color: 'var(--color-dark)', marginBottom: '10px' }}>
+            Kuis Skrining PTM Terkunci
+          </h2>
+
+          <p style={{ color: '#64748B', fontSize: '1rem', lineHeight: 1.6, maxWidth: '560px', margin: '0 auto 28px' }}>
+            Anda belum menghitung Indeks Massa Tubuh (BMI) di <strong>Kalkulator Nutrisi</strong>. Kuis skrining kesehatan membutuhkan data BMI awal Anda untuk menganalisis risiko Penyakit Tidak Menular secara akurat.
+          </p>
+
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <button
+              onClick={onNavigateToCalc}
+              className="btn-nav-combined"
+              style={{ minWidth: '240px', padding: '14px 28px' }}
+            >
+              <span className="btn-text-default" style={{ gap: '8px' }}>
+                <Calculator size={18} /> HITUNG BMI SEKARANG
+              </span>
+              <span className="btn-text-hover" style={{ gap: '8px' }}>
+                <Calculator size={18} /> HITUNG BMI SEKARANG <ArrowRight size={16} />
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const currentQ = quizQuestions[currentStep - 1];
 
   return (
@@ -265,16 +313,33 @@ export default function KuisSkrining({ currentUser }) {
             </div>
             <h2>Kuis Skrining Risiko Kesehatan &amp; Gaya Hidup</h2>
             <p>
-              Uji 10 indikator gaya hidup Anda untuk mendeteksi potensi risiko awal Penyakit Tidak Menular (Diabetes Tipe 2, Hipertensi, dan Penyakit Jantung).
+              Uji indikator gaya hidup Anda untuk mendeteksi potensi risiko awal Penyakit Tidak Menular (Diabetes Tipe 2, Hipertensi, dan Penyakit Jantung).
             </p>
+          </div>
+
+          {/* Auto-Pulled BMI Info Banner */}
+          <div style={{ background: '#F0FDF4', border: '1px solid #A7F3D0', borderRadius: '16px', padding: '14px 18px', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Activity size={20} color="#059669" />
+              <div>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#065F46' }}>Data BMI Terhubung dari Kalkulator:</span>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--color-dark)' }}>
+                  BMI {userBmiData.bmi} kg/m² • {userBmiData.category} ({userBmiData.points} Poin Risiko)
+                </div>
+              </div>
+            </div>
+
+            <button onClick={onNavigateToCalc} className="btn-cta-outline" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>
+              Hitung Ulang BMI
+            </button>
           </div>
 
           <div className="quiz-features-grid">
             <div className="quiz-feature-item">
               <Zap size={22} color="#2F6323" />
               <div>
-                <h4>10 Pertanyaan Ringkas</h4>
-                <p>Hanya membutuhkan waktu 2–3 menit untuk diselesaikan.</p>
+                <h4>9 Pertanyaan Singkat</h4>
+                <p>Hanya membutuhkan waktu 1–2 menit untuk diselesaikan.</p>
               </div>
             </div>
 
@@ -305,7 +370,7 @@ export default function KuisSkrining({ currentUser }) {
                   </span>
                 </div>
               </div>
-              <button onClick={() => setCurrentStep(11)} className="btn-cta-outline" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+              <button onClick={() => setCurrentStep(10)} className="btn-cta-outline" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
                 Lihat Laporan Detail
               </button>
             </div>
@@ -320,19 +385,19 @@ export default function KuisSkrining({ currentUser }) {
         </div>
       )}
 
-      {/* ================= STEPS 1..10: QUESTION CARDS ================= */}
-      {currentStep >= 1 && currentStep <= 10 && (
+      {/* ================= STEPS 1..9: QUESTION CARDS ================= */}
+      {currentStep >= 1 && currentStep <= 9 && (
         <div className="quiz-card">
           {/* Progress Bar Header */}
           <div className="quiz-progress-header">
             <div className="quiz-step-info">
               <span className="quiz-category-tag">{currentQ.categoryLabel}</span>
-              <span className="quiz-step-counter">Pertanyaan {currentStep} dari 10</span>
+              <span className="quiz-step-counter">Pertanyaan {currentStep} dari 9</span>
             </div>
             <div className="quiz-progress-bar-bg">
               <div
                 className="quiz-progress-bar-fill"
-                style={{ width: `${(currentStep / 10) * 100}%` }}
+                style={{ width: `${(currentStep / 9) * 100}%` }}
               ></div>
             </div>
           </div>
@@ -379,14 +444,14 @@ export default function KuisSkrining({ currentUser }) {
               className="btn-auth-primary"
               style={{ minWidth: '150px', padding: '12px 24px' }}
             >
-              {currentStep === 10 ? 'LIHAT HASIL' : 'LANJUT'} <ArrowRight size={16} />
+              {currentStep === 9 ? 'LIHAT HASIL' : 'LANJUT'} <ArrowRight size={16} />
             </button>
           </div>
         </div>
       )}
 
-      {/* ================= STEP 11: RESULTS DASHBOARD ================= */}
-      {currentStep === 11 && savedQuizResult && (
+      {/* ================= STEP 10: RESULTS DASHBOARD ================= */}
+      {currentStep === 10 && savedQuizResult && (
         <div className="quiz-card quiz-results-card">
           <div className="results-header">
             <div className="badge-risk-hero" style={{ backgroundColor: savedQuizResult.badgeColor }}>
@@ -405,6 +470,11 @@ export default function KuisSkrining({ currentUser }) {
             <div className="score-summary-text">
               <h3>Status Indikator Kesehatan</h3>
               <p>{savedQuizResult.summaryText}</p>
+              {userBmiData && (
+                <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#059669', fontWeight: 700 }}>
+                  ✓ Termasuk Skor BMI: {userBmiData.bmi} ({userBmiData.rawCategory} • {userBmiData.points} Poin)
+                </div>
+              )}
             </div>
           </div>
 
@@ -417,7 +487,7 @@ export default function KuisSkrining({ currentUser }) {
               </div>
               <div className="subrisk-info">
                 <h5>Risiko Metabolik &amp; Diabetes</h5>
-                <p>BMI, konsumsi minuman manis, &amp; aktivitas fisik.</p>
+                <p>BMI ({userBmiData?.bmi}), minuman manis, &amp; aktivitas fisik.</p>
                 <span className="subrisk-score">Skor Sub: {savedQuizResult.metabolicPoints} Poin</span>
               </div>
             </div>

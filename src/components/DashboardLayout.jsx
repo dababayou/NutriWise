@@ -81,13 +81,13 @@ export default function DashboardLayout({ currentUser, onLogout, onOpenPrivacy, 
 
           {activeTab === 'kalkulator' && (
             <div className="dashboard-tab-pane">
-              <Kalkulator currentUser={currentUser} />
+              <Kalkulator currentUser={currentUser} onNavigateToQuiz={() => setActiveTab('kuis')} />
             </div>
           )}
 
           {activeTab === 'kuis' && (
             <div className="dashboard-tab-pane">
-              <KuisSkrining currentUser={currentUser} />
+              <KuisSkrining currentUser={currentUser} onNavigateToCalc={() => setActiveTab('kalkulator')} />
             </div>
           )}
 
