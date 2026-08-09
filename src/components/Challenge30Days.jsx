@@ -98,7 +98,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
     }
   };
 
-  // Add Custom Target
+  // Add Custom Target (Staged in React state until Save is clicked)
   const handleAddCustomTarget = (e) => {
     e.preventDefault();
     if (!newTargetText.trim()) return;
@@ -116,16 +116,21 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
       icon: 'Check'
     };
 
-    const updated = [...targets, newTarget];
-    persistState(updated, historyData, setupDone, timezone);
+    setTargets(prev => [...prev, newTarget]);
     setNewTargetText('');
     setShowAddForm(false);
   };
 
-  // Delete Custom Target
+  // Delete Custom Target (Staged in React state until Save is clicked)
   const handleDeleteTarget = (id) => {
-    const updated = targets.filter(t => t.id !== id || t.isMandatory);
-    persistState(updated, historyData, setupDone, timezone);
+    setTargets(prev => prev.filter(t => t.id !== id || t.isMandatory));
+  };
+
+  // Cancel Setup Changes (Revert back to initial saved state)
+  const handleCancelSetup = () => {
+    setTargets(initialTargets);
+    setTimezone(initialTz);
+    setShowSetupModal(false);
   };
 
   // Update Today's Target Entry
@@ -398,7 +403,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
 
           <div className="setup-ready-footer">
             {setupDone && (
-              <button onClick={() => setShowSetupModal(false)} className="btn-danger-outline">
+              <button onClick={handleCancelSetup} className="btn-danger-outline">
                 Batal
               </button>
             )}
