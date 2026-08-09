@@ -15,6 +15,8 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [timezone, setTimezone] = useState('Asia/Jakarta (WIB)');
   const [targets, setTargets] = useState(initialDefaultTargets);
+  const [initialTz, setInitialTz] = useState('Asia/Jakarta (WIB)');
+  const [initialTargets, setInitialTargets] = useState(initialDefaultTargets);
   const [historyData, setHistoryData] = useState({}); // { '1': { water: 2.5, walk: 30, ... }, '2': ... }
   const [currentDayNum, setCurrentDayNum] = useState(1);
   const [startDate, setStartDate] = useState(() => new Date().toISOString());
@@ -38,10 +40,16 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
       const savedTz = meta.nutriwise_tz || localStorage.getItem('nutriwise_tz') || 'Asia/Jakarta (WIB)';
       const savedStartDate = meta.nutriwise_start_date || localStorage.getItem('nutriwise_start_date') || new Date().toISOString();
 
-      if (savedTargets) setTargets(savedTargets);
+      if (savedTargets) {
+        setTargets(savedTargets);
+        setInitialTargets(savedTargets);
+      } else {
+        setInitialTargets(initialDefaultTargets);
+      }
       setHistoryData(savedHistory);
       setSetupDone(savedSetupDone);
       setTimezone(savedTz);
+      setInitialTz(savedTz);
       setStartDate(savedStartDate);
 
       // Calculate current day number (1 to 30) based on start date
@@ -54,6 +62,8 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
       setSetupDone(false);
       setHistoryData({});
       setTargets(initialDefaultTargets);
+      setInitialTargets(initialDefaultTargets);
+      setInitialTz('Asia/Jakarta (WIB)');
     }
   }, [currentUser]);
 
@@ -224,10 +234,14 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
   const monthlyProgressPercent = Math.round((monthlyCompletedDaysCount / 30) * 100);
 
   const handleStartChallenge = () => {
-    const newStart = new Date().toISOString();
+    const newStart = setupDone ? startDate : new Date().toISOString();
     persistState(targets, historyData, true, timezone, newStart);
+    setInitialTargets(targets);
+    setInitialTz(timezone);
     setShowSetupModal(false);
   };
+
+  const isSetupChanged = timezone !== initialTz || JSON.stringify(targets) !== JSON.stringify(initialTargets);
 
   return (
     <section id="challenge" className="section container">
@@ -336,7 +350,20 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
 
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                     <button type="button" onClick={() => setShowAddForm(false)} className="btn-cta-outline" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Batal</button>
-                    <button type="submit" className="btn-auth-primary" style={{ padding: '6px 16px', fontSize: '0.8rem' }}>Simpan Target</button>
+                    <button
+                      type="submit"
+                      className="btn-auth-primary"
+                      disabled={!newTargetText.trim()}
+                      style={{
+                        padding: '6px 16px',
+                        fontSize: '0.8rem',
+                        opacity: !newTargetText.trim() ? 0.45 : 1,
+                        cursor: !newTargetText.trim() ? 'not-allowed' : 'pointer',
+                        pointerEvents: !newTargetText.trim() ? 'none' : 'auto'
+                      }}
+                    >
+                      Simpan Target
+                    </button>
                   </div>
                 </form>
               )}
@@ -375,9 +402,19 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
                 Batal
               </button>
             )}
-            <button onClick={handleStartChallenge} className="btn-nav-combined" style={{ minWidth: '200px' }}>
-              <span className="btn-text-default">Simpan Perubahan</span>
-              <span className="btn-text-hover">Simpan Perubahan</span>
+            <button
+              onClick={handleStartChallenge}
+              className="btn-nav-combined"
+              disabled={setupDone && !isSetupChanged}
+              style={{
+                minWidth: '200px',
+                opacity: setupDone && !isSetupChanged ? 0.45 : 1,
+                cursor: setupDone && !isSetupChanged ? 'not-allowed' : 'pointer',
+                pointerEvents: setupDone && !isSetupChanged ? 'none' : 'auto'
+              }}
+            >
+              <span className="btn-text-default">{setupDone ? 'Simpan Perubahan' : 'Siap, Mulai Tantangan!'}</span>
+              <span className="btn-text-hover">{setupDone ? 'Simpan Perubahan' : 'Siap, Mulai Tantangan!'}</span>
             </button>
           </div>
         </div>

@@ -231,19 +231,37 @@ export default function ProfileModal({ isOpen, onClose, currentUser, onUpdateUse
           </div>
 
           {/* Action Buttons */}
-          <div className="profile-modal-footer">
-            <button
-              type="button"
-              onClick={() => { setDeleteStep(1); setConfirmInput(''); }}
-              className="btn-delete-account-trigger"
-            >
-              <Trash2 size={16} /> Hapus Akun
-            </button>
+          {(() => {
+            const initialName = currentUser?.user_metadata?.full_name || '';
+            const initialEmail = currentUser?.email || '';
+            const initialAvatar = currentUser?.user_metadata?.avatar_url || presetAvatars[0];
+            const isChanged = fullName !== initialName || email !== initialEmail || avatarUrl !== initialAvatar;
 
-            <button type="submit" className="btn-auth-primary" disabled={saving}>
-              {saving ? 'MENYIMPAN...' : 'SIMPAN PROFIL'}
-            </button>
-          </div>
+            return (
+              <div className="profile-modal-footer">
+                <button
+                  type="button"
+                  onClick={() => { setDeleteStep(1); setConfirmInput(''); }}
+                  className="btn-delete-account-trigger"
+                >
+                  <Trash2 size={16} /> Hapus Akun
+                </button>
+
+                <button
+                  type="submit"
+                  className="btn-auth-primary"
+                  disabled={!isChanged || saving}
+                  style={{
+                    opacity: !isChanged || saving ? 0.45 : 1,
+                    cursor: !isChanged || saving ? 'not-allowed' : 'pointer',
+                    pointerEvents: !isChanged || saving ? 'none' : 'auto'
+                  }}
+                >
+                  {saving ? 'MENYIMPAN...' : 'SIMPAN PROFIL'}
+                </button>
+              </div>
+            );
+          })()}
         </form>
 
         {/* ================= STEP 1: FIRST CONFIRMATION ALERT MODAL ================= */}
