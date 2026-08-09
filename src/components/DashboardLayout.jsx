@@ -3,16 +3,17 @@ import Sidebar from './Sidebar';
 import Kalkulator from './Kalkulator';
 import Challenge30Days from './Challenge30Days';
 import MitosFakta from './MitosFakta';
+import KuisSkrining from './KuisSkrining';
 import { Menu, ShieldCheck } from 'lucide-react';
 
 export default function DashboardLayout({ currentUser, onLogout, onOpenPrivacy, onOpenProfile }) {
   const [activeTab, setActiveTabState] = useState(() => {
     const hash = window.location.hash.replace('#', '');
-    if (['challenge', 'kalkulator', 'mitos'].includes(hash)) {
+    if (['challenge', 'kalkulator', 'kuis', 'mitos'].includes(hash)) {
       return hash;
     }
     const saved = localStorage.getItem('nutriwise_active_tab');
-    return saved && ['challenge', 'kalkulator', 'mitos'].includes(saved) ? saved : 'challenge';
+    return saved && ['challenge', 'kalkulator', 'kuis', 'mitos'].includes(saved) ? saved : 'challenge';
   });
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -26,7 +27,7 @@ export default function DashboardLayout({ currentUser, onLogout, onOpenPrivacy, 
   useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash.replace('#', '');
-      if (['challenge', 'kalkulator', 'mitos'].includes(hash)) {
+      if (['challenge', 'kalkulator', 'kuis', 'mitos'].includes(hash)) {
         setActiveTabState(hash);
         localStorage.setItem('nutriwise_active_tab', hash);
       }
@@ -60,6 +61,7 @@ export default function DashboardLayout({ currentUser, onLogout, onOpenPrivacy, 
             <h2 className="dashboard-page-title">
               {activeTab === 'challenge' && '30-Day Health Challenge'}
               {activeTab === 'kalkulator' && 'Kalkulator Nutrisi'}
+              {activeTab === 'kuis' && 'Kuis Skrining Risiko PTM'}
               {activeTab === 'mitos' && 'Mitos vs Fakta Nutrisi'}
             </h2>
           </div>
@@ -80,6 +82,12 @@ export default function DashboardLayout({ currentUser, onLogout, onOpenPrivacy, 
           {activeTab === 'kalkulator' && (
             <div className="dashboard-tab-pane">
               <Kalkulator currentUser={currentUser} />
+            </div>
+          )}
+
+          {activeTab === 'kuis' && (
+            <div className="dashboard-tab-pane">
+              <KuisSkrining currentUser={currentUser} />
             </div>
           )}
 

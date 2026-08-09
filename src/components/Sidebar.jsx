@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Calculator, Lightbulb, LogOut, User, Edit3, X } from 'lucide-react';
+import { Flame, Calculator, ClipboardCheck, Lightbulb, LogOut, User, Edit3, X } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, currentUser, onLogout, mobileOpen, setMobileOpen, onOpenProfile }) {
   const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Pengguna NutriWise';
@@ -9,6 +9,7 @@ export default function Sidebar({ activeTab, setActiveTab, currentUser, onLogout
   const menuItems = [
     { id: 'challenge', label: '30-Day Challenge', icon: Flame },
     { id: 'kalkulator', label: 'Kalkulator Nutrisi', icon: Calculator },
+    { id: 'kuis', label: 'Kuis Skrining PTM', icon: ClipboardCheck },
     { id: 'mitos', label: 'Mitos vs Fakta', icon: Lightbulb }
   ];
 
