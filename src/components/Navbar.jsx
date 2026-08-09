@@ -30,7 +30,7 @@ export default function Navbar({ onOpenPrivacy, onOpenAuth, currentUser, onLogou
     <header className={`navbar-wrapper ${scrolled ? 'scrolled' : ''}`}>
       <div className="navbar-inner">
         <a href="#" onClick={(e) => { e.preventDefault(); handleNavClick(''); }} className="navbar-logo">
-          <img src="/dino_logo.png" alt="NutriWise Logo" />
+          <img src="/logo.png" alt="NutriWise Logo" />
           <span>NutriWise</span>
         </a>
 

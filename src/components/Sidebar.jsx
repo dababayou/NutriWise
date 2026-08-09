@@ -28,7 +28,7 @@ export default function Sidebar({ activeTab, setActiveTab, currentUser, onLogout
 
         {/* Brand Logo Header */}
         <div className="sidebar-brand">
-          <img src="/dino_logo.png" alt="NutriWise Logo" className="sidebar-logo-img" />
+          <img src="/logo.png" alt="NutriWise Logo" className="sidebar-logo-img" />
           <div className="sidebar-brand-text">
             <span className="sidebar-title">NutriWise</span>
             <span className="sidebar-tagline">Health Dashboard</span>

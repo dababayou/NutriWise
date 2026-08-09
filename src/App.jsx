@@ -96,7 +96,7 @@ export default function App() {
         color: '#2F6323'
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-          <img src="/dino_logo.png" alt="NutriWise" style={{ width: '56px', height: '56px' }} />
+          <img src="/logo.png" alt="NutriWise" style={{ width: '56px', height: '56px' }} />
           <span style={{ fontWeight: 700, fontSize: '1rem', color: '#2F6323', fontFamily: 'var(--font-serif)' }}>Memuat NutriWise...</span>
         </div>
       </div>
