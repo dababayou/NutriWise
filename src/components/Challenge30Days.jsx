@@ -1,257 +1,542 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Flame, Trophy, Calendar, Cloud, Lock, X } from 'lucide-react';
+import { Check, Flame, Trophy, Calendar, Cloud, Lock, X, Plus, Settings, AlertCircle, Clock, Moon, Droplets, Footprints, Salad, Ban, Edit3, Trash2, ArrowRight } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
-const defaultHabits = [
-  { id: 'water', text: 'Minum minimal 2-3 liter air putih' },
-  { id: 'walk', text: 'Jalan kaki atau aktif bergerak 30 menit' },
-  { id: 'veggies', text: 'Konsumsi 2 porsi sayur & buah segar' },
-  { id: 'sleep', text: 'Tidur berkualitas 7-8 jam per malam' },
-  { id: 'nosugar', text: 'Hindari minuman manis berlebih' }
+const initialDefaultTargets = [
+  { id: 'water', text: 'Minum minimal 2-3 liter air putih', type: 'quantitative', unit: 'Liter', targetVal: 2.5, minGood: 2.0, maxGood: 3.5, icon: 'Droplets', isMandatory: true, frequency: 'daily' },
+  { id: 'walk', text: 'Jalan kaki atau aktif bergerak 30 menit', type: 'quantitative', unit: 'Menit', targetVal: 30, minGood: 30, maxGood: 180, icon: 'Footprints', isMandatory: true, frequency: 'daily' },
+  { id: 'veggies', text: 'Konsumsi 2 porsi sayur & buah segar', type: 'quantitative', unit: 'Porsi', targetVal: 2, minGood: 2, maxGood: 10, icon: 'Salad', isMandatory: true, frequency: 'daily' },
+  { id: 'sleep', text: 'Tidur berkualitas 7-8 jam per malam', type: 'quantitative', unit: 'Jam', targetVal: 7.5, minGood: 7, maxGood: 8.5, icon: 'Moon', isMandatory: true, frequency: 'daily' },
+  { id: 'nosugar', text: 'Hindari minuman manis berlebih', type: 'boolean', targetVal: 1, icon: 'Ban', isMandatory: true, frequency: 'daily' }
 ];
 
 export default function Challenge30Days({ currentUser, onOpenAuth }) {
-  const [completedDays, setCompletedDays] = useState([]);
-  const [todayHabits, setTodayHabits] = useState({});
+  const [setupDone, setSetupDone] = useState(false);
+  const [showSetupModal, setShowSetupModal] = useState(false);
+  const [timezone, setTimezone] = useState('Asia/Jakarta (WIB)');
+  const [targets, setTargets] = useState(initialDefaultTargets);
+  const [historyData, setHistoryData] = useState({}); // { '1': { water: 2.5, walk: 30, ... }, '2': ... }
+  const [currentDayNum, setCurrentDayNum] = useState(1);
+  const [startDate, setStartDate] = useState(() => new Date().toISOString());
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
-  // Sync from Supabase Cloud on login
+  // New Custom Target Form State
+  const [newTargetText, setNewTargetText] = useState('');
+  const [newTargetType, setNewTargetType] = useState('quantitative'); // 'quantitative' | 'boolean'
+  const [newTargetUnit, setNewTargetUnit] = useState('Kali');
+  const [newTargetVal, setNewTargetVal] = useState(1);
+  const [newTargetFreq, setNewTargetFreq] = useState('daily'); // 'daily' | 'every_2_days' | 'every_3_days' | 'weekly'
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  // Load from Supabase / localStorage on mount & currentUser change
   useEffect(() => {
     if (currentUser) {
-      const cloudDays = currentUser.user_metadata?.nutriwise_days;
-      const cloudHabits = currentUser.user_metadata?.nutriwise_today_habits;
-      
-      const daysToSet = Array.isArray(cloudDays) ? cloudDays : [];
-      const habitsToSet = (cloudHabits && typeof cloudHabits === 'object') ? cloudHabits : {};
+      const meta = currentUser.user_metadata || {};
+      const savedTargets = meta.nutriwise_targets || JSON.parse(localStorage.getItem('nutriwise_targets') || 'null');
+      const savedHistory = meta.nutriwise_history || JSON.parse(localStorage.getItem('nutriwise_history') || '{}');
+      const savedSetupDone = meta.nutriwise_setup_done ?? JSON.parse(localStorage.getItem('nutriwise_setup_done') || 'false');
+      const savedTz = meta.nutriwise_tz || localStorage.getItem('nutriwise_tz') || 'Asia/Jakarta (WIB)';
+      const savedStartDate = meta.nutriwise_start_date || localStorage.getItem('nutriwise_start_date') || new Date().toISOString();
 
-      setCompletedDays(daysToSet);
-      setTodayHabits(habitsToSet);
-      localStorage.setItem('nutriwise_days', JSON.stringify(daysToSet));
-      localStorage.setItem('nutriwise_today_habits', JSON.stringify(habitsToSet));
+      if (savedTargets) setTargets(savedTargets);
+      setHistoryData(savedHistory);
+      setSetupDone(savedSetupDone);
+      setTimezone(savedTz);
+      setStartDate(savedStartDate);
+
+      // Calculate current day number (1 to 30) based on start date
+      const start = new Date(savedStartDate);
+      const now = new Date();
+      const diffTime = Math.abs(now - start);
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      setCurrentDayNum(Math.min(Math.max(diffDays, 1), 30));
     } else {
-      setCompletedDays([]);
-      setTodayHabits({});
-      localStorage.removeItem('nutriwise_days');
-      localStorage.removeItem('nutriwise_today_habits');
+      setSetupDone(false);
+      setHistoryData({});
+      setTargets(initialDefaultTargets);
     }
   }, [currentUser]);
 
-  // Save to Supabase Cloud & LocalStorage
-  const saveProgress = async (newDays, newHabits) => {
-    setCompletedDays(newDays);
-    setTodayHabits(newHabits);
-    localStorage.setItem('nutriwise_days', JSON.stringify(newDays));
-    localStorage.setItem('nutriwise_today_habits', JSON.stringify(newHabits));
+  // Sync to Cloud / LocalStorage
+  const persistState = async (newTargets, newHistory, newSetupDone, newTz, newStart) => {
+    setTargets(newTargets);
+    setHistoryData(newHistory);
+    setSetupDone(newSetupDone);
+    setTimezone(newTz);
+    if (newStart) setStartDate(newStart);
+
+    localStorage.setItem('nutriwise_targets', JSON.stringify(newTargets));
+    localStorage.setItem('nutriwise_history', JSON.stringify(newHistory));
+    localStorage.setItem('nutriwise_setup_done', JSON.stringify(newSetupDone));
+    localStorage.setItem('nutriwise_tz', newTz);
+    if (newStart) localStorage.setItem('nutriwise_start_date', newStart);
 
     if (currentUser && isSupabaseConfigured && supabase) {
       try {
         await supabase.auth.updateUser({
           data: {
-            nutriwise_days: newDays,
-            nutriwise_today_habits: newHabits
+            nutriwise_targets: newTargets,
+            nutriwise_history: newHistory,
+            nutriwise_setup_done: newSetupDone,
+            nutriwise_tz: newTz,
+            nutriwise_start_date: newStart || startDate
           }
         });
       } catch (err) {
-        console.error('Failed to sync challenge data to Supabase:', err);
+        console.error('Failed to sync settings to Supabase:', err);
       }
     }
   };
 
-  const toggleHabit = (id) => {
-    if (!currentUser) {
-      setShowAuthPrompt(true);
-      return;
-    }
-    const updatedHabits = {
-      ...todayHabits,
-      [id]: !todayHabits[id]
+  // Add Custom Target
+  const handleAddCustomTarget = (e) => {
+    e.preventDefault();
+    if (!newTargetText.trim()) return;
+
+    const newTarget = {
+      id: 'custom_' + Date.now(),
+      text: newTargetText.trim(),
+      type: newTargetType,
+      unit: newTargetType === 'quantitative' ? newTargetUnit : '',
+      targetVal: Number(newTargetVal) || 1,
+      minGood: Number(newTargetVal) || 1,
+      maxGood: Number(newTargetVal) * 2 || 2,
+      isMandatory: false,
+      frequency: newTargetFreq,
+      icon: 'Check'
     };
-    saveProgress(completedDays, updatedHabits);
+
+    const updated = [...targets, newTarget];
+    persistState(updated, historyData, setupDone, timezone);
+    setNewTargetText('');
+    setShowAddForm(false);
   };
 
-  const toggleDayComplete = (dayNum) => {
+  // Delete Custom Target
+  const handleDeleteTarget = (id) => {
+    const updated = targets.filter(t => t.id !== id || t.isMandatory);
+    persistState(updated, historyData, setupDone, timezone);
+  };
+
+  // Update Today's Target Entry
+  const handleUpdateTargetValue = (dayNum, targetId, val) => {
     if (!currentUser) {
       setShowAuthPrompt(true);
       return;
     }
-    const updatedDays = completedDays.includes(dayNum)
-      ? completedDays.filter(d => d !== dayNum)
-      : [...completedDays, dayNum];
-    saveProgress(updatedDays, todayHabits);
+    const dayEntry = historyData[dayNum] || {};
+    const updatedDay = {
+      ...dayEntry,
+      [targetId]: val
+    };
+    const updatedHistory = {
+      ...historyData,
+      [dayNum]: updatedDay
+    };
+    persistState(targets, updatedHistory, setupDone, timezone);
   };
 
-  // Determine display state based on authentication
-  const displayDays = currentUser ? completedDays : [];
-  const displayHabits = currentUser ? todayHabits : {};
-  const progressPercent = currentUser ? Math.round((completedDays.length / 30) * 100) : 0;
+  // Evaluate Target Status for a Day
+  // Returns: 'green' (Selesai), 'yellow' (Kurang/Berlebih), 'red' (Gagal/Tidak Dikerjakan), 'none' (Kosong)
+  const evaluateTargetStatus = (target, val) => {
+    if (val === undefined || val === null || val === '') return 'none';
+
+    if (target.type === 'boolean') {
+      return val ? 'green' : 'red';
+    }
+
+    const num = Number(val);
+    if (isNaN(num)) return 'none';
+
+    // Sleep special rule: 7-8.5 hrs is green, < 7 or > 8.5 is yellow
+    if (target.id === 'sleep') {
+      if (num >= 7 && num <= 8.5) return 'green';
+      if (num < 7 || num > 8.5) return 'yellow';
+    }
+
+    if (num >= target.targetVal) return 'green';
+    if (num > 0 && num < target.targetVal) return 'yellow';
+    return 'red';
+  };
+
+  // Filter Active Targets for a Specific Day based on Frequency
+  const getActiveTargetsForDay = (dayNum) => {
+    return targets.filter((t) => {
+      if (!t.frequency || t.frequency === 'daily') return true;
+      if (t.frequency === 'every_2_days') return (dayNum % 2) === 1;
+      if (t.frequency === 'every_3_days') return (dayNum % 3) === 1;
+      if (t.frequency === 'weekly') return (dayNum % 7) === 1;
+      return true;
+    });
+  };
+
+  // Calculate Overall Day Status & Completion % for Calendar Colors
+  const calculateDayStatus = (dayNum) => {
+    const activeForDay = getActiveTargetsForDay(dayNum);
+    if (activeForDay.length === 0) return { status: 'future', percent: 0 };
+
+    const dayEntry = historyData[dayNum] || {};
+    let greenCount = 0;
+    let totalAssessed = 0;
+
+    activeForDay.forEach((t) => {
+      const val = dayEntry[t.id];
+      const res = evaluateTargetStatus(t, val);
+      if (res === 'green') greenCount++;
+      if (res !== 'none') totalAssessed++;
+    });
+
+    const percent = Math.round((greenCount / activeForDay.length) * 100);
+
+    // If day is in the future
+    if (dayNum > currentDayNum) {
+      return { status: 'future', percent: 0 };
+    }
+
+    // Past or Current Day
+    if (percent === 100) return { status: 'green', percent };
+    if (percent >= 60) return { status: 'yellow', percent };
+    if (percent >= 30) return { status: 'orange', percent };
+    return { status: 'red', percent };
+  };
+
+  // Today's Progress Percentage
+  const todayActiveTargets = getActiveTargetsForDay(currentDayNum);
+  const todayEntry = historyData[currentDayNum] || {};
+  let todayCompletedCount = 0;
+  todayActiveTargets.forEach((t) => {
+    if (evaluateTargetStatus(t, todayEntry[t.id]) === 'green') {
+      todayCompletedCount++;
+    }
+  });
+  const todayProgressPercent = todayActiveTargets.length > 0 
+    ? Math.round((todayCompletedCount / todayActiveTargets.length) * 100)
+    : 0;
+
+  // Monthly Completed Days Count (Days with 'green' or 'yellow' >= 60%)
+  let monthlyCompletedDaysCount = 0;
+  for (let d = 1; d <= currentDayNum; d++) {
+    const { status } = calculateDayStatus(d);
+    if (status === 'green') {
+      monthlyCompletedDaysCount++;
+    }
+  }
+  const monthlyProgressPercent = Math.round((monthlyCompletedDaysCount / 30) * 100);
+
+  const handleStartChallenge = () => {
+    const newStart = new Date().toISOString();
+    persistState(targets, historyData, true, timezone, newStart);
+    setShowSetupModal(false);
+  };
 
   return (
     <section id="challenge" className="section container">
-      <h2 className="section-title">30-Day Health Challenge</h2>
-      <p className="section-subtitle">
-        Bangun kebiasaan sehat berkelanjutan secara bertahap. Lacak kemajuan harianmu selama 30 hari untuk mencapai tubuh yang lebih fit, segar, dan berenergi.
-      </p>
+      {/* ================= 1. ONBOARDING SETUP UI (if not setup yet or modal open) ================= */}
+      {(!setupDone || showSetupModal) ? (
+        <div className="challenge-setup-wrapper">
+          <div className="setup-header">
+            <div className="setup-badge"><Settings size={18} /> Pengaturan Tantangan Sehat</div>
+            <h2>Konfigurasi 30-Day Health Challenge Anda</h2>
+            <p>Atur target harian, sesuaikan frekuensi, dan atur zona waktu sebelum memulai perjalanan pola hidup sehat 30 hari.</p>
+          </div>
 
-      <div className="challenge-card">
-        {!currentUser && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(255,252,244,0.9) 0%, rgba(240,247,235,0.9) 100%)',
-            border: '1px solid rgba(47, 99, 35, 0.2)',
-            borderRadius: '16px',
-            padding: '16px 24px',
-            marginBottom: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '12px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Lock size={20} color="#2F6323" />
-              <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--color-dark)' }}>
-                Mode Pratinjau: Klik target harian atau kalender di bawah untuk mulai tantangan.
-              </span>
+          <div className="setup-grid">
+            {/* Left Card: Timezone & General Settings */}
+            <div className="setup-card">
+              <h3><Clock size={20} color="#2F6323" /> 1. Zona Waktu &amp; Jadwal</h3>
+              <p className="setup-subtext">Penentuan pergantian hari otomatis disesuaikan dengan zona lokasi Anda.</p>
+              
+              <div className="form-group" style={{ marginTop: '16px' }}>
+                <label className="form-label">Pilih Zona Waktu Anda:</label>
+                <select 
+                  className="form-input" 
+                  value={timezone} 
+                  onChange={(e) => setTimezone(e.target.value)}
+                >
+                  <option value="Asia/Jakarta (WIB)">Asia/Jakarta (WIB - UTC+7)</option>
+                  <option value="Asia/Makassar (WITA)">Asia/Makassar (WITA - UTC+8)</option>
+                  <option value="Asia/Jayapura (WIT)">Asia/Jayapura (WIT - UTC+9)</option>
+                </select>
+              </div>
             </div>
-            <button 
-              onClick={() => setShowAuthPrompt(true)}
-              className="btn-nav-combined"
-              style={{ height: '38px', minWidth: '140px', fontSize: '0.88rem' }}
-            >
-              <span className="btn-text-default">Mulai Challenge</span>
-              <span className="btn-text-hover">Masuk / Daftar</span>
+
+            {/* Right Card: Custom Target List Manager */}
+            <div className="setup-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h3><Edit3 size={20} color="#2F6323" /> 2. Target Harian &amp; Custom</h3>
+                <button 
+                  type="button" 
+                  onClick={() => setShowAddForm(!showAddForm)}
+                  className="btn-cta-outline"
+                  style={{ padding: '6px 12px', fontSize: '0.82rem' }}
+                >
+                  <Plus size={16} /> Tambah Target
+                </button>
+              </div>
+
+              {/* Add Custom Form */}
+              {showAddForm && (
+                <form onSubmit={handleAddCustomTarget} className="add-target-box">
+                  <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>Buat Target Baru</h4>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Nama target (misal: Segelas Jus Alpukat)"
+                    value={newTargetText}
+                    onChange={(e) => setNewTargetText(e.target.value)}
+                    required
+                    style={{ marginBottom: '10px' }}
+                  />
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+                    <div>
+                      <label className="form-label">Tipe Target</label>
+                      <select className="form-input" value={newTargetType} onChange={(e) => setNewTargetType(e.target.value)}>
+                        <option value="quantitative">Hitung Angka</option>
+                        <option value="boolean">Ya / Tidak</option>
+                      </select>
+                    </div>
+
+                    {newTargetType === 'quantitative' && (
+                      <div>
+                        <label className="form-label">Satuan</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="Liter, Menit, Porsi, dll"
+                          value={newTargetUnit}
+                          onChange={(e) => setNewTargetUnit(e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                    <div>
+                      <label className="form-label">Nilai Target</label>
+                      <input
+                        type="number"
+                        className="form-input"
+                        value={newTargetVal}
+                        onChange={(e) => setNewTargetVal(e.target.value)}
+                        min="1"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="form-label">Frekuensi Tampil</label>
+                      <select className="form-input" value={newTargetFreq} onChange={(e) => setNewTargetFreq(e.target.value)}>
+                        <option value="daily">Setiap Hari</option>
+                        <option value="every_2_days">Selang 2 Hari</option>
+                        <option value="every_3_days">Selang 3 Hari</option>
+                        <option value="weekly">1x Seminggu</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                    <button type="button" onClick={() => setShowAddForm(false)} className="btn-cta-outline" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Batal</button>
+                    <button type="submit" className="btn-auth-primary" style={{ padding: '6px 16px', fontSize: '0.8rem' }}>Simpan Target</button>
+                  </div>
+                </form>
+              )}
+
+              {/* Target Items List */}
+              <div className="setup-targets-list">
+                {targets.map((t) => (
+                  <div key={t.id} className="setup-target-item">
+                    <div>
+                      <div className="target-item-title">
+                        {t.text} {t.isMandatory && <span className="mandatory-badge">Wajib</span>}
+                      </div>
+                      <div className="target-item-meta">
+                        {t.type === 'quantitative' ? `Target: ${t.targetVal} ${t.unit}` : 'Target: Ya/Tidak'} • Frekuensi: {
+                          t.frequency === 'every_2_days' ? '2 Hari Sekali' :
+                          t.frequency === 'every_3_days' ? '3 Hari Sekali' :
+                          t.frequency === 'weekly' ? 'Mingguan' : 'Harian'
+                        }
+                      </div>
+                    </div>
+
+                    {!t.isMandatory && (
+                      <button onClick={() => handleDeleteTarget(t.id)} className="btn-delete-target" title="Hapus target">
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="setup-ready-footer">
+            {setupDone && (
+              <button onClick={() => setShowSetupModal(false)} className="btn-cta-outline">
+                Batal Edit
+              </button>
+            )}
+            <button onClick={handleStartChallenge} className="btn-nav-combined" style={{ minWidth: '240px', padding: '14px 28px' }}>
+              <span className="btn-text-default">SIAP &amp; MULAI TANTANGAN</span>
+              <span className="btn-text-hover">SIAP &amp; MULAI TANTANGAN</span>
             </button>
           </div>
-        )}
-
-        <div className="progress-header">
-          <div>
-            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 700 }}>
-              Kemajuan Tantangan Sehat
-            </h3>
-            <p style={{ color: 'var(--color-muted)', fontSize: '0.9rem' }}>
-              {displayDays.length} dari 30 Hari Selesai ({progressPercent}%)
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {currentUser ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(47, 99, 35, 0.12)', padding: '8px 16px', borderRadius: '30px', fontWeight: 700, color: 'var(--color-forest)', fontSize: '0.88rem' }}>
-                <Cloud size={18} color="#2F6323" />
-                Cloud Sync Akun
-              </div>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(148, 163, 184, 0.15)', padding: '8px 16px', borderRadius: '30px', fontWeight: 600, color: '#64748B', fontSize: '0.88rem' }}>
-                <Lock size={16} /> Belum Login
-              </div>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-cream)', padding: '8px 16px', borderRadius: '30px', fontWeight: 700, color: 'var(--color-forest)' }}>
-              <Flame color="#FF6B6B" size={20} />
-              Streak: {displayDays.length} Hari
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-cream)', padding: '8px 16px', borderRadius: '30px', fontWeight: 700, color: 'var(--color-forest)' }}>
-              <Trophy color="#FFB800" size={20} />
-              Level: {currentUser ? 'Pejuang Sehat' : 'Pemula'}
-            </div>
-          </div>
         </div>
-
-        <div className="progress-bar-bg">
-          <div className="progress-bar-fill" style={{ width: `${progressPercent}%` }}></div>
-        </div>
-
-        <h4 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', marginBottom: '16px', marginTop: '32px' }}>
-          Target Harian Hari Ini
-        </h4>
-
-        <div className="task-grid">
-          {defaultHabits.map((habit) => {
-            const isChecked = !!displayHabits[habit.id];
-            return (
-              <div 
-                key={habit.id} 
-                className={`task-item ${isChecked ? 'completed' : ''}`}
-                onClick={() => toggleHabit(habit.id)}
-                style={{ cursor: 'pointer' }}
-              >
-                <div className="task-checkbox">
-                  {isChecked && <Check size={16} />}
-                </div>
-                <span className="task-text">{habit.text}</span>
+      ) : (
+        /* ================= 2. ACTIVE CHALLENGE DASHBOARD UI (Matches cal.png layout) ================= */
+        <div className="challenge-card main-challenge-card">
+          {!currentUser && (
+            <div className="preview-mode-banner">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Lock size={20} color="#2F6323" />
+                <span>Mode Pratinjau: Masuk atau daftar akun untuk menyimpan progres Anda.</span>
               </div>
-            );
-          })}
-        </div>
-
-        <h4 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', marginBottom: '16px', marginTop: '40px' }}>
-          Kalender 30 Hari
-        </h4>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '10px' }}>
-          {Array.from({ length: 30 }, (_, i) => i + 1).map((day) => {
-            const isDone = displayDays.includes(day);
-            return (
-              <button
-                key={day}
-                onClick={() => toggleDayComplete(day)}
-                style={{
-                  padding: '12px 6px',
-                  borderRadius: '12px',
-                  border: isDone ? 'none' : '1px solid #E2E8F0',
-                  backgroundColor: isDone ? 'var(--color-forest)' : '#FAF9F6',
-                  color: isDone ? '#FFFFFF' : 'var(--color-dark)',
-                  fontWeight: 700,
-                  fontSize: '0.9rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                <span>H-{day}</span>
-                {isDone ? <Check size={14} /> : <Calendar size={14} opacity={0.4} />}
+              <button onClick={() => setShowAuthPrompt(true)} className="btn-nav-combined" style={{ height: '36px', minWidth: '140px', fontSize: '0.85rem' }}>
+                <span className="btn-text-default">Masuk / Daftar</span>
+                <span className="btn-text-hover">Masuk / Daftar</span>
               </button>
-            );
-          })}
-        </div>
-      </div>
+            </div>
+          )}
 
-      {/* Login Prompt Popup Modal when Guest tries to check target or calendar */}
+          {/* Section Header */}
+          <div className="challenge-title-row">
+            <div>
+              <h2 className="challenge-hero-title">Kemajuan Tantangan Sehat</h2>
+              <p className="today-progress-sublabel">Progress Hari Ini ({todayProgressPercent}%)</p>
+            </div>
+
+            <button 
+              onClick={() => setShowSetupModal(true)} 
+              className="btn-cta-outline"
+              style={{ padding: '8px 16px', fontSize: '0.85rem', gap: '6px' }}
+            >
+              <Settings size={16} /> Pengaturan Tantangan
+            </button>
+          </div>
+
+          {/* Today's Separated Progress Bar */}
+          <div className="progress-bar-bg today-progress-bar">
+            <div className="progress-bar-fill" style={{ width: `${todayProgressPercent}%` }}></div>
+          </div>
+
+          {/* Subtitle: Target Hari Ini */}
+          <h3 className="section-sub-title">Target Hari Ini (Hari-{currentDayNum})</h3>
+
+          {/* Today's Target Input Grid */}
+          <div className="target-input-grid">
+            {todayActiveTargets.map((target) => {
+              const currentVal = todayEntry[target.id] ?? '';
+              const evalStatus = evaluateTargetStatus(target, currentVal);
+
+              return (
+                <div key={target.id} className={`target-input-card status-${evalStatus}`}>
+                  <div className="target-card-top">
+                    <span className="target-card-title">{target.text}</span>
+                    <span className={`status-pill pill-${evalStatus}`}>
+                      {evalStatus === 'green' && '✓ Selesai'}
+                      {evalStatus === 'yellow' && '~ Warning'}
+                      {evalStatus === 'red' && '✗ Belum'}
+                      {evalStatus === 'none' && 'Isi Target'}
+                    </span>
+                  </div>
+
+                  <div className="target-card-body">
+                    {target.type === 'quantitative' ? (
+                      <div className="quantitative-input-row">
+                        <input
+                          type="number"
+                          step="0.5"
+                          className="form-input quant-input"
+                          placeholder={`Misal ${target.targetVal}`}
+                          value={currentVal}
+                          onChange={(e) => handleUpdateTargetValue(currentDayNum, target.id, e.target.value)}
+                        />
+                        <span className="quant-unit">{target.unit}</span>
+                      </div>
+                    ) : (
+                      <div className="boolean-input-row">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateTargetValue(currentDayNum, target.id, true)}
+                          className={`btn-bool ${currentVal === true ? 'active-yes' : ''}`}
+                        >
+                          ✓ Ya (Selesai)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateTargetValue(currentDayNum, target.id, false)}
+                          className={`btn-bool ${currentVal === false ? 'active-no' : ''}`}
+                        >
+                          ✗ Tidak
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Subtitle: Kalender 30 Hari */}
+          <div style={{ marginTop: '36px', marginBottom: '16px' }}>
+            <h3 className="section-sub-title">Kalender 30 hari</h3>
+          </div>
+
+          {/* Auto-Colored 30 Day Grid */}
+          <div className="calendar-grid-30">
+            {Array.from({ length: 30 }, (_, i) => i + 1).map((day) => {
+              const { status, percent } = calculateDayStatus(day);
+              const isToday = day === currentDayNum;
+
+              return (
+                <div
+                  key={day}
+                  className={`calendar-day-box status-${status} ${isToday ? 'is-today' : ''}`}
+                  title={`Hari ${day}: ${percent}% Terpenuhi`}
+                >
+                  <span className="day-label">H-{day}</span>
+                  <div className="day-icon-wrap">
+                    {status === 'green' && <Check size={18} color="#059669" />}
+                    {status === 'yellow' && <span className="day-symbol yellow">~</span>}
+                    {status === 'orange' && <span className="day-symbol orange">-</span>}
+                    {status === 'red' && <span className="day-symbol red">✕</span>}
+                    {status === 'future' && <Calendar size={16} opacity={0.35} />}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Monthly Separated Progress Bar */}
+          <div className="monthly-progress-section">
+            <p className="monthly-progress-text">
+              {monthlyCompletedDaysCount} dari 30 hari selesai ({monthlyProgressPercent}%)
+            </p>
+            <div className="progress-bar-bg monthly-progress-bar">
+              <div className="progress-bar-fill" style={{ width: `${monthlyProgressPercent}%` }}></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Login Prompt Modal */}
       {showAuthPrompt && (
         <div className="modal-overlay" onClick={() => setShowAuthPrompt(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px', textAlign: 'center', padding: '36px 32px' }}>
             <button className="modal-close" onClick={() => setShowAuthPrompt(false)}>
               <X size={20} />
             </button>
-            
             <div style={{ width: '64px', height: '64px', background: 'rgba(47, 99, 35, 0.12)', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
               <Lock color="#2F6323" size={32} />
             </div>
-            
             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 700, marginBottom: '10px', color: 'var(--color-dark)' }}>
               Akses Fitur Terkunci
             </h3>
-            
             <p style={{ color: 'var(--color-muted)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '24px' }}>
-              Silakan <strong>Masuk</strong> atau <strong>Daftar Akun NutriWise</strong> terlebih dahulu untuk mengaktifkan pelacak harian 30-Day Health Challenge dan menyinkronkan progresmu secara otomatis lintas perangkat.
+              Silakan <strong>Masuk</strong> atau <strong>Daftar Akun NutriWise</strong> terlebih dahulu untuk mengaktifkan pelacak harian 30-Day Health Challenge.
             </p>
-            
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button 
-                onClick={() => setShowAuthPrompt(false)} 
-                className="btn-cta-outline"
-                style={{ borderColor: '#CBD5E1', color: '#64748B', padding: '10px 20px', fontSize: '0.9rem' }}
-              >
-                Nanti Saja
-              </button>
-              <button 
-                onClick={() => {
-                  setShowAuthPrompt(false);
-                  if (onOpenAuth) onOpenAuth();
-                }} 
-                className="btn-nav-combined"
-                style={{ minWidth: '160px' }}
-              >
+              <button onClick={() => setShowAuthPrompt(false)} className="btn-cta-outline">Nanti Saja</button>
+              <button onClick={() => { setShowAuthPrompt(false); if (onOpenAuth) onOpenAuth(); }} className="btn-nav-combined">
                 <span className="btn-text-default">Masuk / Daftar</span>
                 <span className="btn-text-hover">Masuk / Daftar</span>
               </button>
