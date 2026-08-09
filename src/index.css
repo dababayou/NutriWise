@@ -2363,6 +2363,20 @@ h1, h2, h3, h4, .font-serif {
   margin-bottom: 8px;
 }
 
+.challenge-live-clock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-mint-light);
+  color: var(--color-forest);
+  border: 1px solid rgba(47, 99, 35, 0.25);
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 4px 14px;
+  border-radius: 50px;
+  margin-bottom: 8px;
+}
+
 .setup-header h2 {
   font-family: var(--font-serif);
   font-size: 1.4rem;

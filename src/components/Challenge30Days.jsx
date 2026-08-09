@@ -51,13 +51,6 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
       setTimezone(savedTz);
       setInitialTz(savedTz);
       setStartDate(savedStartDate);
-
-      // Calculate current day number (1 to 30) based on start date
-      const start = new Date(savedStartDate);
-      const now = new Date();
-      const diffTime = Math.abs(now - start);
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-      setCurrentDayNum(Math.min(Math.max(diffDays, 1), 30));
     } else {
       setSetupDone(false);
       setHistoryData({});
@@ -66,6 +59,58 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
       setInitialTz('Asia/Jakarta (WIB)');
     }
   }, [currentUser]);
+
+  const [currentTimeStr, setCurrentTimeStr] = useState('');
+
+  // Live Clock & Real Calendar Day Calculation in Selected Timezone
+  useEffect(() => {
+    const updateClockAndDay = () => {
+      const ianaZone = timezone?.split(' ')[0] || 'Asia/Jakarta';
+      let tzAbbr = 'WIB';
+      if (ianaZone.includes('Makassar')) tzAbbr = 'WITA';
+      if (ianaZone.includes('Jayapura')) tzAbbr = 'WIT';
+
+      const now = new Date();
+
+      // Format time HH.mm (e.g. "03.34 WIB")
+      const formatter = new Intl.DateTimeFormat('id-ID', {
+        timeZone: ianaZone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      const formattedTime = formatter.format(now).replace(':', '.');
+      setCurrentTimeStr(`${formattedTime} ${tzAbbr}`);
+
+      // Calculate calendar day difference relative to start date in selected timezone
+      if (startDate) {
+        try {
+          const yearFormatter = new Intl.DateTimeFormat('en-CA', {
+            timeZone: ianaZone,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+
+          const startStr = yearFormatter.format(new Date(startDate));
+          const nowStr = yearFormatter.format(now);
+
+          const startDateObj = new Date(`${startStr}T00:00:00Z`);
+          const nowDateObj = new Date(`${nowStr}T00:00:00Z`);
+
+          const diffMs = nowDateObj.getTime() - startDateObj.getTime();
+          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+          setCurrentDayNum(Math.min(Math.max(diffDays, 1), 30));
+        } catch (err) {
+          console.error('Error calculating day num:', err);
+        }
+      }
+    };
+
+    updateClockAndDay();
+    const timer = setInterval(updateClockAndDay, 1000);
+    return () => clearInterval(timer);
+  }, [startDate, timezone]);
 
   // Sync to Cloud / LocalStorage
   const persistState = async (newTargets, newHistory, newSetupDone, newTz, newStart) => {
@@ -254,7 +299,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
       {(!setupDone || showSetupModal) ? (
         <div className="challenge-setup-wrapper">
           <div className="setup-header">
-            <div className="setup-badge"><Settings size={18} /> Pengaturan Tantangan Sehat</div>
+            <div className="setup-badge"><Clock size={16} /> Hari ke-{currentDayNum} • {currentTimeStr} • Pengaturan Tantangan</div>
             <h2>Konfigurasi 30-Day Health Challenge Anda</h2>
             <p>Atur target harian, sesuaikan frekuensi, dan atur zona waktu sebelum memulai perjalanan pola hidup sehat 30 hari.</p>
           </div>
@@ -442,6 +487,9 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
           {/* Section Header */}
           <div className="challenge-title-row">
             <div>
+              <div className="challenge-live-clock-badge">
+                <Clock size={16} /> Hari ke-{currentDayNum} • {currentTimeStr}
+              </div>
               <h2 className="challenge-hero-title">Kemajuan Tantangan Sehat</h2>
               <p className="today-progress-sublabel">Progress Hari Ini ({todayProgressPercent}%)</p>
             </div>
@@ -461,7 +509,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
           </div>
 
           {/* Subtitle: Target Hari Ini */}
-          <h3 className="section-sub-title">Target Hari Ini (Hari-{currentDayNum})</h3>
+          <h3 className="section-sub-title">Target Hari Ini (Hari ke-{currentDayNum} • {currentTimeStr})</h3>
 
           {/* Today's Target Input Grid */}
           <div className="target-input-grid">
