@@ -664,6 +664,8 @@ h1, h2, h3, h4, .font-serif {
   transition: var(--transition-normal);
   text-align: center;
   align-items: center;
+  justify-content: center;
+  padding: 28px 24px;
 }
 
 /* Front Hover matching card-hover.png */
@@ -691,22 +693,24 @@ h1, h2, h3, h4, .font-serif {
 
 .flip-card-question {
   font-family: var(--font-serif);
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.35;
-  margin-top: 14px;
-  margin-bottom: 6px;
+  margin: 0;
   text-align: center;
 }
 
 .flip-card-hover-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 0.85rem;
   color: #FFFFFF;
   opacity: 0;
   transition: opacity var(--transition-fast);
-  align-self: center;
   text-align: center;
 }
 
