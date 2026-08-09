@@ -372,12 +372,12 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
           <div className="setup-ready-footer">
             {setupDone && (
               <button onClick={() => setShowSetupModal(false)} className="btn-cta-outline">
-                Batal Edit
+                Batal
               </button>
             )}
-            <button onClick={handleStartChallenge} className="btn-nav-combined" style={{ minWidth: '240px', padding: '14px 28px' }}>
-              <span className="btn-text-default">SIAP &amp; MULAI TANTANGAN</span>
-              <span className="btn-text-hover">SIAP &amp; MULAI TANTANGAN</span>
+            <button onClick={handleStartChallenge} className="btn-nav-combined" style={{ minWidth: '200px' }}>
+              <span className="btn-text-default">Simpan Perubahan</span>
+              <span className="btn-text-hover">Simpan Perubahan</span>
             </button>
           </div>
         </div>

@@ -291,7 +291,7 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
                 <Calculator size={18} /> HITUNG BMI SEKARANG
               </span>
               <span className="btn-text-hover" style={{ gap: '8px' }}>
-                <Calculator size={18} /> HITUNG BMI SEKARANG <ArrowRight size={16} />
+                 HITUNG BMI SEKARANG <ArrowRight size={16} />
               </span>
             </button>
           </div>
@@ -442,7 +442,7 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
               onClick={handleNextStep}
               disabled={!answers[currentStep - 1]}
               className="btn-auth-primary"
-              style={{ minWidth: '150px', padding: '12px 24px' }}
+              style={{ minWidth: '150px' }}
             >
               {currentStep === 9 ? 'LIHAT HASIL' : 'LANJUT'} <ArrowRight size={16} />
             </button>
@@ -548,7 +548,6 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
             <button
               onClick={() => setCurrentStep(0)}
               className="btn-auth-primary"
-              style={{ minWidth: '160px' }}
             >
               KEMBALI KE MENU
             </button>

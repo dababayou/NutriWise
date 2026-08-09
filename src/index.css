@@ -245,6 +245,8 @@ h1, h2, h3, h4, .font-serif {
   background: transparent;
   transition: var(--transition-normal);
   cursor: pointer;
+  height: 44px;
+  box-sizing: border-box;
 }
 
 .btn-cta-outline:hover {
@@ -252,6 +254,36 @@ h1, h2, h3, h4, .font-serif {
   color: #FFFFFF;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(47, 99, 35, 0.25);
+}
+
+.btn-auth-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: 2px solid var(--color-forest);
+  border-radius: 50px;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.95rem;
+  background-color: var(--color-forest);
+  transition: var(--transition-normal);
+  cursor: pointer;
+  height: 44px;
+  box-sizing: border-box;
+}
+
+.btn-auth-primary:hover:not(:disabled) {
+  background-color: #234B1A;
+  border-color: #234B1A;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(47, 99, 35, 0.25);
+}
+
+.btn-auth-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Combined Navbar Button: Mulai Challenge (Solid Green) -> Masuk / Daftar (Green Outline) on hover */
@@ -1675,17 +1707,32 @@ h1, h2, h3, h4, .font-serif {
   border-top: 1px solid #F1F5F9;
 }
 
+.profile-modal-footer > button {
+  flex: 1;
+  height: 44px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .btn-delete-account-trigger {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background: #FEF2F2;
   color: #DC2626;
-  border: 1px solid #FCA5A5;
-  padding: 10px 18px;
+  border: 1.5px solid #FCA5A5;
+  padding: 10px 20px;
   border-radius: 50px;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  height: 44px;
+  box-sizing: border-box;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1758,6 +1805,19 @@ h1, h2, h3, h4, .font-serif {
   gap: 12px;
 }
 
+.confirm-modal-buttons > button {
+  flex: 1;
+  height: 44px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 50px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .btn-warning-action {
   background: #D97706;
   color: #FFFFFF;
@@ -1766,6 +1826,8 @@ h1, h2, h3, h4, .font-serif {
   border-radius: 50px;
   font-weight: 700;
   font-size: 0.88rem;
+  height: 44px;
+  box-sizing: border-box;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1782,6 +1844,8 @@ h1, h2, h3, h4, .font-serif {
   border-radius: 50px;
   font-weight: 700;
   font-size: 0.88rem;
+  height: 44px;
+  box-sizing: border-box;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -2383,6 +2447,17 @@ h1, h2, h3, h4, .font-serif {
   gap: 14px;
   padding-top: 20px;
   border-top: 1px solid #F1F5F9;
+}
+
+.setup-ready-footer > button {
+  height: 44px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 10px 24px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Active Challenge Layout (cal.png exact match) */
