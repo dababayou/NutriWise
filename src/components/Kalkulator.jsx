@@ -141,11 +141,12 @@ export default function Kalkulator({ currentUser, onNavigateToQuiz }) {
                   <label className="form-label">Berat (kg)</label>
                   <input
                     type="number"
-                    step="0.1"
+                    min="1"
+                    step="1"
                     className="form-input"
                     placeholder="Contoh: 65"
                     value={bmiWeight}
-                    onChange={(e) => setBmiWeight(e.target.value)}
+                    onChange={(e) => setBmiWeight(e.target.value < 0 ? '' : e.target.value)}
                     required
                   />
                 </div>
@@ -153,11 +154,12 @@ export default function Kalkulator({ currentUser, onNavigateToQuiz }) {
                   <label className="form-label">Tinggi (cm)</label>
                   <input
                     type="number"
-                    step="0.1"
+                    min="1"
+                    step="1"
                     className="form-input"
                     placeholder="Contoh: 170"
                     value={bmiHeight}
-                    onChange={(e) => setBmiHeight(e.target.value)}
+                    onChange={(e) => setBmiHeight(e.target.value < 0 ? '' : e.target.value)}
                     required
                   />
                 </div>
@@ -184,7 +186,7 @@ export default function Kalkulator({ currentUser, onNavigateToQuiz }) {
                     <ClipboardCheck size={16} /> Lanjut ke Kuis Skrining PTM
                   </span>
                   <span className="btn-text-hover" style={{ gap: '6px' }}>
-                    <ClipboardCheck size={16} /> Lanjut ke Kuis Skrining PTM <ArrowRight size={14} />
+                    Lanjut ke Kuis Skrining PTM <ArrowRight size={14} />
                   </span>
                 </button>
               </div>
@@ -204,11 +206,12 @@ export default function Kalkulator({ currentUser, onNavigateToQuiz }) {
                   <label className="form-label">Berat (kg)</label>
                   <input
                     type="number"
-                    step="0.1"
+                    min="1"
+                    step="1"
                     className="form-input"
                     placeholder="Contoh: 65"
                     value={calWeight}
-                    onChange={(e) => setCalWeight(e.target.value)}
+                    onChange={(e) => setCalWeight(e.target.value < 0 ? '' : e.target.value)}
                     required
                   />
                 </div>
@@ -216,11 +219,12 @@ export default function Kalkulator({ currentUser, onNavigateToQuiz }) {
                   <label className="form-label">Tinggi (cm)</label>
                   <input
                     type="number"
-                    step="0.1"
+                    min="1"
+                    step="1"
                     className="form-input"
                     placeholder="Contoh: 170"
                     value={calHeight}
-                    onChange={(e) => setCalHeight(e.target.value)}
+                    onChange={(e) => setCalHeight(e.target.value < 0 ? '' : e.target.value)}
                     required
                   />
                 </div>
@@ -231,10 +235,12 @@ export default function Kalkulator({ currentUser, onNavigateToQuiz }) {
                   <label className="form-label">Usia (Tahun)</label>
                   <input
                     type="number"
+                    min="1"
+                    step="1"
                     className="form-input"
                     placeholder="Contoh: 22"
                     value={calAge}
-                    onChange={(e) => setCalAge(e.target.value)}
+                    onChange={(e) => setCalAge(e.target.value < 0 ? '' : e.target.value)}
                     required
                   />
                 </div>
@@ -290,11 +296,12 @@ export default function Kalkulator({ currentUser, onNavigateToQuiz }) {
                 <label className="form-label">Berat Badan (kg)</label>
                 <input
                   type="number"
-                  step="0.1"
+                  min="1"
+                  step="1"
                   className="form-input"
                   placeholder="Contoh: 65"
                   value={waterWeight}
-                  onChange={(e) => setWaterWeight(e.target.value)}
+                  onChange={(e) => setWaterWeight(e.target.value < 0 ? '' : e.target.value)}
                   required
                 />
               </div>

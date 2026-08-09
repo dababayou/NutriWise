@@ -371,7 +371,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
 
           <div className="setup-ready-footer">
             {setupDone && (
-              <button onClick={() => setShowSetupModal(false)} className="btn-cta-outline">
+              <button onClick={() => setShowSetupModal(false)} className="btn-danger-outline">
                 Batal
               </button>
             )}
