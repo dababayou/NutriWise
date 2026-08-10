@@ -267,7 +267,7 @@ export default function AuthPage({ initialMode = 'login', onBackHome, onAuthSucc
         {/* Security Footer Note */}
         <div className="auth-footer-security">
           <ShieldCheck size={16} color="#2F6323" />
-          <span>Keamanan Data Terjamin dengan Supabase Auth &amp; Encryption Standard (SDG 3 Data Privacy)</span>
+          <span>Keamanan Data Terjamin dengan Supabase Auth &amp; Encryption Standard &amp; Privacy Shield</span>
         </div>
       </div>
     </div>

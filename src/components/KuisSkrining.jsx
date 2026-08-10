@@ -311,7 +311,7 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
           <div className="quiz-intro-header">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', marginBottom: '12px' }}>
               <div className="quiz-badge" style={{ margin: 0 }}>
-                <ClipboardCheck size={18} /> Skrining Mandiri PTM (SDG 3)
+                <ClipboardCheck size={18} /> Skrining Mandiri PTM
               </div>
               <button
                 type="button"

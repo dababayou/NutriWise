@@ -5,17 +5,25 @@ export default function Footer({ onOpenPrivacy }) {
   return (
     <footer className="footer">
       <div className="container">
-        <div className="footer-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+        <div className="footer-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px' }}>
           <div>
             <h3 className="footer-brand">NutriWise</h3>
             <p style={{ fontSize: '0.9rem', lineHeight: 1.6, color: 'rgba(255, 255, 255, 0.7)', maxWidth: '480px' }}>
-              Inovasi Web Kesehatan &amp; Nutrisi Berbasis Sains untuk mendukung Sustainable Development Goals (SDG 3: Kehidupan Sehat dan Sejahtera).
+              Inovasi Web Kesehatan &amp; Nutrisi Berbasis Sains untuk mendukung kebiasaan hidup sehat, pencegahan risiko kesehatan, dan edukasi nutrisi terukur.
             </p>
           </div>
 
           <div>
             <h4 style={{ color: '#FFFFFF', marginBottom: '16px', fontSize: '1.05rem' }}>Fitur Utama</h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', padding: 0 }}>
+            <ul style={{ 
+              listStyle: 'none', 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+              gap: '12px 28px', 
+              fontSize: '0.9rem', 
+              padding: 0,
+              margin: 0
+            }}>
               <li><a href="#kalkulator" style={{ color: 'inherit', textDecoration: 'none' }}>Kalkulator BMI &amp; Kalori</a></li>
               <li><a href="#kalkulator" style={{ color: 'inherit', textDecoration: 'none' }}>Kebutuhan Air Harian</a></li>
               <li><a href="#mitos-fakta" style={{ color: 'inherit', textDecoration: 'none' }}>Mitos vs Fakta Nutrisi</a></li>

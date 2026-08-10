@@ -94,11 +94,22 @@ export default function PrivacyModal({ isOpen, onClose }) {
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '16px 32px 20px', borderTop: '1px solid #F1F5F9', background: '#FAF9F6', textAlign: 'right' }}>
+        <div style={{ padding: '16px 32px 20px', borderTop: '1px solid #F1F5F9', background: '#FAF9F6', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
           <button 
             onClick={onClose} 
             className="btn-auth-primary"
-            style={{ padding: '8px 24px', fontSize: '0.9rem', cursor: 'pointer', height: '40px' }}
+            style={{ 
+              padding: '10px 28px', 
+              fontSize: '0.95rem', 
+              fontWeight: 700, 
+              cursor: 'pointer', 
+              height: '44px',
+              whiteSpace: 'nowrap',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50px'
+            }}
           >
             Saya Mengerti
           </button>

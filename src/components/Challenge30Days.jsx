@@ -708,7 +708,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
               Silakan <strong>Masuk</strong> atau <strong>Daftar Akun NutriWise</strong> terlebih dahulu untuk mengaktifkan pelacak harian 30-Day Health Challenge.
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button onClick={() => setShowAuthPrompt(false)} className="btn-cta-outline">Nanti Saja</button>
+              <button onClick={() => setShowAuthPrompt(false)} className="btn-warning-outline" style={{ padding: '8px 20px', height: '44px' }}>Nanti Saja</button>
               <button onClick={() => { setShowAuthPrompt(false); if (onOpenAuth) onOpenAuth(); }} className="btn-nav-combined">
                 <span className="btn-text-default">Masuk / Daftar</span>
                 <span className="btn-text-hover">Masuk / Daftar</span>
