@@ -27,6 +27,7 @@ export default function Footer({ onOpenPrivacy }) {
               <li><a href="#kalkulator" style={{ color: 'inherit', textDecoration: 'none' }}>Kalkulator BMI &amp; Kalori</a></li>
               <li><a href="#kalkulator" style={{ color: 'inherit', textDecoration: 'none' }}>Kebutuhan Air Harian</a></li>
               <li><a href="#mitos-fakta" style={{ color: 'inherit', textDecoration: 'none' }}>Mitos vs Fakta Nutrisi</a></li>
+              <li><a href="#kuis-skrining" style={{ color: 'inherit', textDecoration: 'none' }}>Kuis Skrining Mandiri PTM</a></li>
               <li><a href="#challenge" style={{ color: 'inherit', textDecoration: 'none' }}>30-Day Challenge Tracker</a></li>
             </ul>
           </div>

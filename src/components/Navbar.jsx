@@ -55,9 +55,37 @@ export default function Navbar({ onOpenPrivacy, onOpenAuth, currentUser, onLogou
               <ShieldCheck size={18} className="privacy-icon" /> Privasi &amp; Data
             </button>
           </li>
+
+          {/* CTA Action Item Inside Mobile Drawer (<= 1024px) */}
+          <li className="mobile-drawer-cta">
+            {currentUser ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', paddingTop: '10px', borderTop: '1px solid rgba(47, 99, 35, 0.15)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--color-cream)', padding: '10px 16px', borderRadius: '30px', fontSize: '0.9rem', fontWeight: 700, border: '1px solid rgba(47, 99, 35, 0.2)' }}>
+                  <User size={16} color="#2F6323" />
+                  <span>{displayName}</span>
+                </div>
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); onLogout(); }} 
+                  className="btn-danger-outline" 
+                  style={{ width: '100%', height: '42px' }}
+                >
+                  <LogOut size={16} /> Keluar Akun
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => { setMobileMenuOpen(false); onOpenAuth(); }} 
+                className="btn-auth-primary"
+                style={{ width: '100%', height: '44px', marginTop: '8px' }}
+              >
+                Mulai Challenge / Masuk
+              </button>
+            )}
+          </li>
         </ul>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Desktop-only action area (> 1024px) */}
+        <div className="desktop-nav-actions">
           {currentUser ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <a href="#challenge" onClick={(e) => { e.preventDefault(); handleNavClick('#challenge'); }} className="btn-cta-outline" style={{ padding: '8px 18px', fontSize: '0.88rem' }}>
