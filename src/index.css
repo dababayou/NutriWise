@@ -370,7 +370,7 @@ h1, h2, h3, h4, .font-serif {
   overflow: hidden;
   max-width: 1280px;
   margin: 16px auto 0;
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
 }
 
 .hero-bg-overlay {
@@ -424,7 +424,7 @@ h1, h2, h3, h4, .font-serif {
   position: relative;
   width: 100%;
   max-width: 660px;
-  background-color: #FAF9F6;
+  background-color: var(--color-cream);
   border-top-right-radius: 36px;
   margin-top: 16px;
   padding: 28px 36px 32px 36px;
