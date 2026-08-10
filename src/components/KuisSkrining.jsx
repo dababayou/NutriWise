@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardCheck, CheckCircle2, AlertTriangle, ArrowRight, RotateCcw, Activity, Heart, ShieldAlert, Zap, Info, Lock, Calculator } from 'lucide-react';
+import { ClipboardCheck, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, RotateCcw, Activity, Heart, ShieldAlert, Zap, Info, Lock, Calculator, Home } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 // 9 Questions (Q2 through Q10 from document; Q1 BMI is auto-pulled from Kalkulator)
@@ -432,10 +432,14 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
             <button
               onClick={handlePrevStep}
               disabled={currentStep === 1}
-              className="btn-cta-outline"
-              style={{ opacity: currentStep === 1 ? 0.4 : 1, cursor: currentStep === 1 ? 'not-allowed' : 'pointer' }}
+              className="btn-warning-outline"
+              style={{
+                opacity: currentStep === 1 ? 0.4 : 1,
+                cursor: currentStep === 1 ? 'not-allowed' : 'pointer',
+                minWidth: '130px'
+              }}
             >
-              Kembali
+              <ArrowLeft size={16} /> Kembali
             </button>
 
             <button
@@ -444,7 +448,7 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
               className="btn-auth-primary"
               style={{ minWidth: '150px' }}
             >
-              {currentStep === 9 ? 'LIHAT HASIL' : 'LANJUT'} <ArrowRight size={16} />
+              {currentStep === 9 ? 'Lihat Hasil' : 'Lanjut'} <ArrowRight size={16} />
             </button>
           </div>
         </div>
@@ -533,23 +537,25 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
             </p>
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons (Swapped: Kembali ke Menu on Left in Red, Ulangi on Right in Green Outline) */}
           <div className="results-actions">
+            <button
+              onClick={() => setCurrentStep(0)}
+              className="btn-danger-outline"
+              style={{ minWidth: '180px' }}
+            >
+              <Home size={16} /> Kembali ke Menu
+            </button>
+
             <button
               onClick={() => {
                 setAnswers({});
                 setCurrentStep(1);
               }}
               className="btn-cta-outline"
+              style={{ minWidth: '180px' }}
             >
               <RotateCcw size={16} /> Ulangi Kuis Skrining
-            </button>
-
-            <button
-              onClick={() => setCurrentStep(0)}
-              className="btn-auth-primary"
-            >
-              KEMBALI KE MENU
             </button>
           </div>
         </div>

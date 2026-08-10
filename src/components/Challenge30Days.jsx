@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Check, Flame, Trophy, Calendar, Cloud, Lock, X, Plus, Settings, AlertCircle, Clock, Moon, Droplets, Footprints, Salad, Ban, Edit3, Trash2, ArrowRight } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const initialDefaultTargets = [
-  { id: 'water', text: 'Minum minimal 2-3 liter air putih', type: 'quantitative', unit: 'Liter', targetVal: 2.5, minGood: 2.0, maxGood: 3.5, icon: 'Droplets', isMandatory: true, frequency: 'daily' },
+  { id: 'water', text: 'Minum minimal 2-3 liter air putih', type: 'quantitative', unit: 'Liter', targetVal: 2.5, minGood: 2.0, maxGood: 4.5, icon: 'Droplets', isMandatory: true, frequency: 'daily' },
   { id: 'walk', text: 'Jalan kaki atau aktif bergerak 30 menit', type: 'quantitative', unit: 'Menit', targetVal: 30, minGood: 30, maxGood: 180, icon: 'Footprints', isMandatory: true, frequency: 'daily' },
-  { id: 'veggies', text: 'Konsumsi 2 porsi sayur & buah segar', type: 'quantitative', unit: 'Porsi', targetVal: 2, minGood: 2, maxGood: 10, icon: 'Salad', isMandatory: true, frequency: 'daily' },
-  { id: 'sleep', text: 'Tidur berkualitas 7-8 jam per malam', type: 'quantitative', unit: 'Jam', targetVal: 7.5, minGood: 7, maxGood: 8.5, icon: 'Moon', isMandatory: true, frequency: 'daily' },
+  { id: 'veggies', text: 'Konsumsi 2 porsi sayur & buah segar', type: 'quantitative', unit: 'Porsi', targetVal: 2, minGood: 2, maxGood: 8, icon: 'Salad', isMandatory: true, frequency: 'daily' },
+  { id: 'sleep', text: 'Tidur berkualitas 7-8 jam per malam', type: 'quantitative', unit: 'Jam', targetVal: 7.5, minGood: 7, maxGood: 9, icon: 'Moon', isMandatory: true, frequency: 'daily' },
   { id: 'nosugar', text: 'Hindari minuman manis berlebih', type: 'boolean', targetVal: 1, icon: 'Ban', isMandatory: true, frequency: 'daily' }
 ];
 
@@ -21,6 +21,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
   const [currentDayNum, setCurrentDayNum] = useState(1);
   const [startDate, setStartDate] = useState(() => new Date().toISOString());
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const syncTimeoutRef = useRef(null);
 
   // New Custom Target Form State
   const [newTargetText, setNewTargetText] = useState('');
@@ -178,26 +179,54 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
     setShowSetupModal(false);
   };
 
-  // Update Today's Target Entry
+  // Update Today's Target Entry (Debounced Cloud Sync to prevent input drops when typing fast)
   const handleUpdateTargetValue = (dayNum, targetId, val) => {
     if (!currentUser) {
       setShowAuthPrompt(true);
       return;
     }
-    const dayEntry = historyData[dayNum] || {};
-    const updatedDay = {
-      ...dayEntry,
-      [targetId]: val
-    };
-    const updatedHistory = {
-      ...historyData,
-      [dayNum]: updatedDay
-    };
-    persistState(targets, updatedHistory, setupDone, timezone);
+
+    setHistoryData((prevHistory) => {
+      const dayEntry = prevHistory[dayNum] || {};
+      const updatedHistory = {
+        ...prevHistory,
+        [dayNum]: {
+          ...dayEntry,
+          [targetId]: val
+        }
+      };
+
+      // 1. Write to localStorage immediately for instant UI responsiveness
+      localStorage.setItem('nutriwise_history', JSON.stringify(updatedHistory));
+
+      // 2. Debounce cloud sync to Supabase (400ms delay) so rapid typing stays smooth
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+      syncTimeoutRef.current = setTimeout(async () => {
+        if (currentUser && isSupabaseConfigured && supabase) {
+          try {
+            await supabase.auth.updateUser({
+              data: {
+                nutriwise_targets: targets,
+                nutriwise_history: updatedHistory,
+                nutriwise_setup_done: setupDone,
+                nutriwise_tz: timezone,
+                nutriwise_start_date: startDate
+              }
+            });
+          } catch (err) {
+            console.error('Failed to sync history to Supabase:', err);
+          }
+        }
+      }, 400);
+
+      return updatedHistory;
+    });
   };
 
-  // Evaluate Target Status for a Day
-  // Returns: 'green' (Selesai), 'yellow' (Kurang/Berlebih), 'red' (Gagal/Tidak Dikerjakan), 'none' (Kosong)
+  // Evaluate Target Status for a Day based on Ideal Healthy Ranges
+  // Returns: 'green' (Ideal/Selesai), 'yellow' (Kurang / Melebihi Batas Aman), 'red' (Belum Dikerjakan/0), 'none' (Kosong)
   const evaluateTargetStatus = (target, val) => {
     if (val === undefined || val === null || val === '') return 'none';
 
@@ -207,16 +236,33 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
 
     const num = Number(val);
     if (isNaN(num)) return 'none';
+    if (num <= 0) return 'red';
 
-    // Sleep special rule: 7-8.5 hrs is green, < 7 or > 8.5 is yellow
-    if (target.id === 'sleep') {
-      if (num >= 7 && num <= 8.5) return 'green';
-      if (num < 7 || num > 8.5) return 'yellow';
+    // Determine healthy thresholds (minGood to maxGood)
+    let minG = target.minGood ?? target.targetVal;
+    let maxG = target.maxGood ?? (target.targetVal * 2.5);
+
+    // Standard medical & nutritional guidelines:
+    if (target.id === 'water') {
+      minG = 2.0;
+      maxG = 4.5; // Overhydration warning above 4.5 L daily
+    } else if (target.id === 'walk') {
+      minG = 30;
+      maxG = 180; // Overtraining / physical exertion warning above 180 mins daily
+    } else if (target.id === 'veggies') {
+      minG = 2;
+      maxG = 8; // Digestive excess warning above 8 portions daily
+    } else if (target.id === 'sleep') {
+      minG = 7.0;
+      maxG = 9.0; // Deprivation (< 7h) or hypersomnia (> 9h) warning
     }
 
-    if (num >= target.targetVal) return 'green';
-    if (num > 0 && num < target.targetVal) return 'yellow';
-    return 'red';
+    if (num >= minG && num <= maxG) {
+      return 'green';
+    } else {
+      // Either under the minimum target or exceeds the safe upper limit!
+      return 'yellow';
+    }
   };
 
   // Filter Active Targets for a Specific Day based on Frequency
