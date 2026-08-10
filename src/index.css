@@ -2364,6 +2364,30 @@ h1, h2, h3, h4, .font-serif {
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
 }
 
+.btn-exit-quiz {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 50px;
+  border: 1.5px solid #FCA5A5;
+  background: #FEF2F2;
+  color: #DC2626;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 34px;
+  box-sizing: border-box;
+}
+
+.btn-exit-quiz:hover {
+  background: #FEE2E2;
+  border-color: #EF4444;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+}
+
 /* Revised 30-Day Health Challenge & Onboarding Setup Styles */
 .challenge-setup-wrapper {
   background: #FFFFFF;

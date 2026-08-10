@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardCheck, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, RotateCcw, Activity, Heart, ShieldAlert, Zap, Info, Lock, Calculator, Home } from 'lucide-react';
+import { ClipboardCheck, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, RotateCcw, Activity, Heart, ShieldAlert, Zap, Info, Lock, Calculator, Home, X, LogOut } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 // 9 Questions (Q2 through Q10 from document; Q1 BMI is auto-pulled from Kalkulator)
@@ -127,6 +127,7 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
   const [answers, setAnswers] = useState({});
   const [savedQuizResult, setSavedQuizResult] = useState(null);
   const [userBmiData, setUserBmiData] = useState(null);
+  const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
 
   // Load existing BMI and quiz result from user metadata or local storage
   useEffect(() => {
@@ -308,8 +309,18 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
       {currentStep === 0 && (
         <div className="quiz-card quiz-intro-card">
           <div className="quiz-intro-header">
-            <div className="quiz-badge">
-              <ClipboardCheck size={18} /> Skrining Mandiri PTM (SDG 3)
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', marginBottom: '12px' }}>
+              <div className="quiz-badge" style={{ margin: 0 }}>
+                <ClipboardCheck size={18} /> Skrining Mandiri PTM (SDG 3)
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowExitConfirmModal(true)}
+                className="btn-exit-quiz"
+                title="Keluar dari Kuis Skrining"
+              >
+                <LogOut size={14} style={{ marginRight: '4px', flexShrink: 0 }} /> Keluar Kuis
+              </button>
             </div>
             <h2>Kuis Skrining Risiko Kesehatan &amp; Gaya Hidup</h2>
             <p>
@@ -389,17 +400,28 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
       {currentStep >= 1 && currentStep <= 9 && (
         <div className="quiz-card">
           {/* Progress Bar Header */}
-          <div className="quiz-progress-header">
-            <div className="quiz-step-info">
-              <span className="quiz-category-tag">{currentQ.categoryLabel}</span>
-              <span className="quiz-step-counter">Pertanyaan {currentStep} dari 9</span>
+          <div className="quiz-progress-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '24px' }}>
+            <div style={{ flex: 1, minWidth: '220px' }}>
+              <div className="quiz-step-info">
+                <span className="quiz-category-tag">{currentQ.categoryLabel}</span>
+                <span className="quiz-step-counter">Pertanyaan {currentStep} dari 9</span>
+              </div>
+              <div className="quiz-progress-bar-bg">
+                <div
+                  className="quiz-progress-bar-fill"
+                  style={{ width: `${(currentStep / 9) * 100}%` }}
+                ></div>
+              </div>
             </div>
-            <div className="quiz-progress-bar-bg">
-              <div
-                className="quiz-progress-bar-fill"
-                style={{ width: `${(currentStep / 9) * 100}%` }}
-              ></div>
-            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowExitConfirmModal(true)}
+              className="btn-exit-quiz"
+              title="Keluar dari Kuis Skrining"
+            >
+              <X size={15} style={{ marginRight: '4px', flexShrink: 0 }} /> Keluar Kuis
+            </button>
           </div>
 
           {/* Question Text */}
@@ -544,7 +566,7 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
               className="btn-danger-outline"
               style={{ minWidth: '180px' }}
             >
-              <Home size={16} /> Kembali ke Menu
+              <Home size={16} style={{ marginRight: '8px', flexShrink: 0 }} /> Kembali ke Menu
             </button>
 
             <button
@@ -555,8 +577,62 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
               className="btn-cta-outline"
               style={{ minWidth: '180px' }}
             >
-              <RotateCcw size={16} /> Ulangi Kuis Skrining
+              <RotateCcw size={16} style={{ marginRight: '8px', flexShrink: 0 }} /> Ulangi Kuis Skrining
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ================= OPT-OUT / EXIT RECONFIRMATION MODAL ================= */}
+      {showExitConfirmModal && (
+        <div className="modal-backdrop" onClick={() => setShowExitConfirmModal(false)}>
+          <div className="modal-card" style={{ maxWidth: '440px', padding: '28px' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <AlertTriangle size={22} color="#DC2626" />
+                </div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-dark)', fontFamily: 'var(--font-serif)' }}>
+                  Keluar dari Kuis Skrining?
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowExitConfirmModal(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.92rem', color: '#475569', lineHeight: 1.5, marginBottom: '24px', textAlign: 'left' }}>
+              {currentStep >= 1 && currentStep <= 9
+                ? 'Jawaban kuis Anda saat ini tidak akan disimpan jika Anda keluar sekarang. Yakin ingin membatalkan kuis dan kembali ke menu?'
+                : 'Apakah Anda yakin ingin keluar dari kuis skrining kesehatan dan kembali ke menu utama?'}
+            </p>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowExitConfirmModal(false)}
+                className="btn-cta-outline"
+                style={{ padding: '8px 18px', fontSize: '0.88rem', height: '40px' }}
+              >
+                Lanjutkan Kuis
+              </button>
+              <button
+                onClick={() => {
+                  setShowExitConfirmModal(false);
+                  setAnswers({});
+                  setCurrentStep(0);
+                  if (currentStep === 0 && onNavigateToCalc) {
+                    onNavigateToCalc();
+                  }
+                }}
+                className="btn-danger-outline"
+                style={{ padding: '8px 18px', fontSize: '0.88rem', height: '40px' }}
+              >
+                <LogOut size={16} style={{ marginRight: '6px', flexShrink: 0 }} /> Ya, Keluar
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -31,12 +31,29 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
   const [newTargetFreq, setNewTargetFreq] = useState('daily'); // 'daily' | 'every_2_days' | 'every_3_days' | 'weekly'
   const [showAddForm, setShowAddForm] = useState(false);
 
+  // Sync refs to avoid stale closures in debounced & unmount cloud persistence
+  const historyRef = useRef(historyData);
+  const targetsRef = useRef(targets);
+  const setupDoneRef = useRef(setupDone);
+  const timezoneRef = useRef(timezone);
+  const startDateRef = useRef(startDate);
+
+  useEffect(() => { historyRef.current = historyData; }, [historyData]);
+  useEffect(() => { targetsRef.current = targets; }, [targets]);
+  useEffect(() => { setupDoneRef.current = setupDone; }, [setupDone]);
+  useEffect(() => { timezoneRef.current = timezone; }, [timezone]);
+  useEffect(() => { startDateRef.current = startDate; }, [startDate]);
+
   // Load from Supabase / localStorage on mount & currentUser change
   useEffect(() => {
     if (currentUser) {
       const meta = currentUser.user_metadata || {};
+      const localHistoryStr = localStorage.getItem('nutriwise_history');
+      const localHistory = localHistoryStr ? JSON.parse(localHistoryStr) : null;
+      
       const savedTargets = meta.nutriwise_targets || JSON.parse(localStorage.getItem('nutriwise_targets') || 'null');
-      const savedHistory = meta.nutriwise_history || JSON.parse(localStorage.getItem('nutriwise_history') || '{}');
+      // Give priority to local history if populated to prevent stale cloud metadata overwriting unsynced typing
+      const savedHistory = localHistory ?? meta.nutriwise_history ?? {};
       const savedSetupDone = meta.nutriwise_setup_done ?? JSON.parse(localStorage.getItem('nutriwise_setup_done') || 'false');
       const savedTz = meta.nutriwise_tz || localStorage.getItem('nutriwise_tz') || 'Asia/Jakarta (WIB)';
       const savedStartDate = meta.nutriwise_start_date || localStorage.getItem('nutriwise_start_date') || new Date().toISOString();
@@ -59,6 +76,26 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
       setInitialTargets(initialDefaultTargets);
       setInitialTz('Asia/Jakarta (WIB)');
     }
+  }, [currentUser]);
+
+  // Flush pending changes to Supabase when user navigates away or component unmounts
+  useEffect(() => {
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+      if (currentUser && isSupabaseConfigured && supabase) {
+        supabase.auth.updateUser({
+          data: {
+            nutriwise_targets: targetsRef.current,
+            nutriwise_history: historyRef.current,
+            nutriwise_setup_done: setupDoneRef.current,
+            nutriwise_tz: timezoneRef.current,
+            nutriwise_start_date: startDateRef.current
+          }
+        }).catch(err => console.error('Unmount sync to Supabase failed:', err));
+      }
+    };
   }, [currentUser]);
 
   const [currentTimeStr, setCurrentTimeStr] = useState('');
@@ -208,11 +245,11 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
           try {
             await supabase.auth.updateUser({
               data: {
-                nutriwise_targets: targets,
+                nutriwise_targets: targetsRef.current,
                 nutriwise_history: updatedHistory,
-                nutriwise_setup_done: setupDone,
-                nutriwise_tz: timezone,
-                nutriwise_start_date: startDate
+                nutriwise_setup_done: setupDoneRef.current,
+                nutriwise_tz: timezoneRef.current,
+                nutriwise_start_date: startDateRef.current
               }
             });
           } catch (err) {
