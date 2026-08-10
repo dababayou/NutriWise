@@ -42,6 +42,9 @@ export default function Navbar({ onOpenPrivacy, onOpenAuth, currentUser, onLogou
             <a href="#mitos-fakta" onClick={(e) => { e.preventDefault(); handleNavClick('#mitos-fakta'); }}>Mitos vs Fakta</a>
           </li>
           <li>
+            <a href="#kuis-skrining" onClick={(e) => { e.preventDefault(); handleNavClick('#kuis-skrining'); }}>Kuis Skrining</a>
+          </li>
+          <li>
             <a href="#challenge" onClick={(e) => { e.preventDefault(); handleNavClick('#challenge'); }}>30-Day Challenge</a>
           </li>
           <li>

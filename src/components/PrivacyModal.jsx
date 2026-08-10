@@ -1,64 +1,104 @@
 import React from 'react';
-import { ShieldCheck, Lock, HardDrive, EyeOff, X } from 'lucide-react';
+import { ShieldCheck, Lock, HardDrive, EyeOff, X, UserCheck, Trash2 } from 'lucide-react';
 
 export default function PrivacyModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
-          <X size={24} />
-        </button>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-          <ShieldCheck size={36} color="#2F6323" />
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.8rem', fontWeight: 700 }}>
-            Kebijakan Privasi & Keamanan Data
-          </h2>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '680px', padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '88vh' }}>
+        {/* Header */}
+        <div style={{ padding: '24px 32px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', background: '#FFFFFF' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <ShieldCheck size={32} color="#2F6323" />
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 800, margin: 0, color: 'var(--color-dark)' }}>
+              Kebijakan Privasi &amp; Keamanan Data
+            </h2>
+          </div>
+          <button 
+            onClick={onClose}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title="Tutup"
+          >
+            <X size={22} />
+          </button>
         </div>
 
-        <p style={{ color: 'var(--color-muted)', marginBottom: '24px', fontSize: '0.95rem' }}>
-          NutriWise berkomitmen tinggi untuk melindungi privasi pengguna sesuai standar keamanan data digital dan kriteria penilaian TIC 9.0 (Indikator 3: Kebijakan Privasi & Keamanan Data).
-        </p>
+        {/* Scrollable Body */}
+        <div className="modal-card-body" style={{ padding: '24px 32px', overflowY: 'auto', flex: 1 }}>
+          <p style={{ color: '#4A5568', marginBottom: '24px', fontSize: '0.94rem', lineHeight: 1.6 }}>
+            NutriWise berkomitmen tinggi untuk melindungi privasi pengguna sesuai standar keamanan data digital nasional dan internasional. Kami memprioritaskan transparansi total atas data kesehatan Anda.
+          </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'flex', gap: '16px', background: 'var(--color-cream)', padding: '16px', borderRadius: '12px' }}>
-            <HardDrive size={28} color="#558949" style={{ shrink: 0 }} />
-            <div>
-              <h4 style={{ fontWeight: 700, marginBottom: '4px' }}>Pemrosesan Lokal (Local-First Data Storage)</h4>
-              <p style={{ fontSize: '0.88rem', color: '#4A5568' }}>
-                Seluruh data perhitungan kalkulator (BMI, kalori, air) dan progres 30-Day Challenge diproses secara instan di peramban (browser) milik pengguna tanpa pernah dikirimkan ke server eksternal.
-              </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '16px', background: 'var(--color-cream)', padding: '18px', borderRadius: '16px', border: '1px solid rgba(47, 99, 35, 0.12)' }}>
+              <HardDrive size={26} color="#558949" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <h4 style={{ fontWeight: 700, marginBottom: '4px', color: 'var(--color-dark)', fontSize: '0.98rem' }}>
+                  1. Pemrosesan Lokal (Local-First Data Storage)
+                </h4>
+                <p style={{ fontSize: '0.88rem', color: '#475569', lineHeight: 1.55, margin: 0 }}>
+                  Seluruh kalkulasi kustom (BMI, kalori, dan kebutuhan air) serta log harian 30-Day Challenge diproses dan disimpan secara langsung di peramban (browser) pengguna tanpa dikirimkan ke pihak ketiga yang tidak dikenal.
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div style={{ display: 'flex', gap: '16px', background: 'var(--color-cream)', padding: '16px', borderRadius: '12px' }}>
-            <EyeOff size={28} color="#558949" style={{ shrink: 0 }} />
-            <div>
-              <h4 style={{ fontWeight: 700, marginBottom: '4px' }}>Nir-Pelacakan & Tanpa Kuki Pihak Ketiga</h4>
-              <p style={{ fontSize: '0.88rem', color: '#4A5568' }}>
-                NutriWise tidak memasang tracker pelacak pihak ketiga, iklan berbayar, atau menjual data kesehatan pribadi pengguna kepada pihak ketiga mana pun.
-              </p>
+            <div style={{ display: 'flex', gap: '16px', background: 'var(--color-cream)', padding: '18px', borderRadius: '16px', border: '1px solid rgba(47, 99, 35, 0.12)' }}>
+              <Lock size={26} color="#558949" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <h4 style={{ fontWeight: 700, marginBottom: '4px', color: 'var(--color-dark)', fontSize: '0.98rem' }}>
+                  2. Enkripsi Sinkronisasi Cloud (Supabase)
+                </h4>
+                <p style={{ fontSize: '0.88rem', color: '#475569', lineHeight: 1.55, margin: 0 }}>
+                  Untuk pengguna terautentikasi, progres 30-Day Challenge dan hasil kuis skrining tersimpan dengan enkripsi di basis data cloud Supabase yang dilindungi oleh Row Level Security (RLS) berbasis ID unik akun.
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div style={{ display: 'flex', gap: '16px', background: 'var(--color-cream)', padding: '16px', borderRadius: '12px' }}>
-            <Lock size={28} color="#558949" style={{ shrink: 0 }} />
-            <div>
-              <h4 style={{ fontWeight: 700, marginBottom: '4px' }}>Kepatuhan Hukum Privasi</h4>
-              <p style={{ fontSize: '0.88rem', color: '#4A5568' }}>
-                Sistem dirancang mengacu pada prinsip Perlindungan Data Pribadi (UU PDP No. 27 Tahun 2022) untuk memastikan pengguna memiliki kendali penuh atas data mereka.
-              </p>
+            <div style={{ display: 'flex', gap: '16px', background: 'var(--color-cream)', padding: '18px', borderRadius: '16px', border: '1px solid rgba(47, 99, 35, 0.12)' }}>
+              <EyeOff size={26} color="#558949" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <h4 style={{ fontWeight: 700, marginBottom: '4px', color: 'var(--color-dark)', fontSize: '0.98rem' }}>
+                  3. Nir-Pelacakan &amp; Tanpa Iklan
+                </h4>
+                <p style={{ fontSize: '0.88rem', color: '#475569', lineHeight: 1.55, margin: 0 }}>
+                  NutriWise tidak menggunakan tracker komersial, kuki pelacak pihak ketiga, atau menjual data profil kesehatan pribadi Anda kepada pengiklan mana pun.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px', background: 'var(--color-cream)', padding: '18px', borderRadius: '16px', border: '1px solid rgba(47, 99, 35, 0.12)' }}>
+              <UserCheck size={26} color="#558949" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <h4 style={{ fontWeight: 700, marginBottom: '4px', color: 'var(--color-dark)', fontSize: '0.98rem' }}>
+                  4. Kepatuhan Hukum (UU PDP No. 27/2022)
+                </h4>
+                <p style={{ fontSize: '0.88rem', color: '#475569', lineHeight: 1.55, margin: 0 }}>
+                  Sistem NutriWise dirancang mengacu pada prinsip Perlindungan Data Pribadi Indonesia untuk menjamin hak kerahasiaan, integritas, dan ketersediaan data pengguna.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px', background: '#FEF2F2', padding: '18px', borderRadius: '16px', border: '1px solid #FCA5A5' }}>
+              <Trash2 size={26} color="#DC2626" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <h4 style={{ fontWeight: 700, marginBottom: '4px', color: '#991B1B', fontSize: '0.98rem' }}>
+                  5. Hak Kendali &amp; Penghapusan Permanen Akun
+                </h4>
+                <p style={{ fontSize: '0.88rem', color: '#7F1D1D', lineHeight: 1.55, margin: 0 }}>
+                  Anda memiliki kendali penuh atas akun. Pengguna dapat memperbarui data profil atau menghapus seluruh riwayat dan akun secara permanen melalui menu Profil.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div style={{ marginTop: '32px', textAlign: 'right' }}>
+        {/* Footer */}
+        <div style={{ padding: '16px 32px 20px', borderTop: '1px solid #F1F5F9', background: '#FAF9F6', textAlign: 'right' }}>
           <button 
             onClick={onClose} 
-            className="btn-hero-more"
-            style={{ padding: '10px 24px', cursor: 'pointer' }}
+            className="btn-auth-primary"
+            style={{ padding: '8px 24px', fontSize: '0.9rem', cursor: 'pointer', height: '40px' }}
           >
             Saya Mengerti
           </button>
