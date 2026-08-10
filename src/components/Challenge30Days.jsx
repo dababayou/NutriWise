@@ -48,23 +48,52 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
   useEffect(() => {
     if (currentUser) {
       const meta = currentUser.user_metadata || {};
-      const localHistoryStr = localStorage.getItem('nutriwise_history');
-      const localHistory = localHistoryStr ? JSON.parse(localHistoryStr) : null;
       
-      const savedTargets = meta.nutriwise_targets || JSON.parse(localStorage.getItem('nutriwise_targets') || 'null');
-      // Give priority to local history if populated to prevent stale cloud metadata overwriting unsynced typing
-      const savedHistory = localHistory ?? meta.nutriwise_history ?? {};
+      let localHistory = {};
+      try {
+        const localHistoryStr = localStorage.getItem('nutriwise_history');
+        if (localHistoryStr) localHistory = JSON.parse(localHistoryStr);
+      } catch (e) {
+        console.error('Error parsing local history:', e);
+      }
+
+      let localTargets = null;
+      try {
+        const localTargetsStr = localStorage.getItem('nutriwise_targets');
+        if (localTargetsStr) localTargets = JSON.parse(localTargetsStr);
+      } catch (e) {
+        console.error('Error parsing local targets:', e);
+      }
+      
+      const cloudTargets = meta.nutriwise_targets;
+      const savedTargets = cloudTargets || localTargets;
+
+      const cloudHistory = meta.nutriwise_history || {};
+      // Deep merge cloud and local history so no completed day is ever lost or overwritten by an empty object
+      const mergedHistory = {
+        ...cloudHistory,
+        ...localHistory
+      };
+
       const savedSetupDone = meta.nutriwise_setup_done ?? JSON.parse(localStorage.getItem('nutriwise_setup_done') || 'false');
       const savedTz = meta.nutriwise_tz || localStorage.getItem('nutriwise_tz') || 'Asia/Jakarta (WIB)';
       const savedStartDate = meta.nutriwise_start_date || localStorage.getItem('nutriwise_start_date') || new Date().toISOString();
 
+      // Ensure local storage is in sync with merged data
+      localStorage.setItem('nutriwise_history', JSON.stringify(mergedHistory));
+      localStorage.setItem('nutriwise_setup_done', JSON.stringify(savedSetupDone));
+      localStorage.setItem('nutriwise_tz', savedTz);
+      localStorage.setItem('nutriwise_start_date', savedStartDate);
+
       if (savedTargets) {
         setTargets(savedTargets);
         setInitialTargets(savedTargets);
+        localStorage.setItem('nutriwise_targets', JSON.stringify(savedTargets));
       } else {
         setInitialTargets(initialDefaultTargets);
       }
-      setHistoryData(savedHistory);
+
+      setHistoryData(mergedHistory);
       setSetupDone(savedSetupDone);
       setTimezone(savedTz);
       setInitialTz(savedTz);
@@ -224,7 +253,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
     }
 
     setHistoryData((prevHistory) => {
-      const dayEntry = prevHistory[dayNum] || {};
+      const dayEntry = prevHistory[dayNum] || prevHistory[String(dayNum)] || {};
       const updatedHistory = {
         ...prevHistory,
         [dayNum]: {
@@ -232,6 +261,8 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
           [targetId]: val
         }
       };
+
+      historyRef.current = updatedHistory;
 
       // 1. Write to localStorage immediately for instant UI responsiveness
       localStorage.setItem('nutriwise_history', JSON.stringify(updatedHistory));
@@ -249,7 +280,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
                 nutriwise_history: updatedHistory,
                 nutriwise_setup_done: setupDoneRef.current,
                 nutriwise_tz: timezoneRef.current,
-                nutriwise_start_date: startDateRef.current
+                nutriwise_start_date: startDateRef.current || localStorage.getItem('nutriwise_start_date') || new Date().toISOString()
               }
             });
           } catch (err) {
@@ -318,7 +349,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
     const activeForDay = getActiveTargetsForDay(dayNum);
     if (activeForDay.length === 0) return { status: 'future', percent: 0 };
 
-    const dayEntry = historyData[dayNum] || {};
+    const dayEntry = historyData[dayNum] || historyData[String(dayNum)] || {};
     let greenCount = 0;
     let totalAssessed = 0;
 
@@ -345,7 +376,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
 
   // Today's Progress Percentage
   const todayActiveTargets = getActiveTargetsForDay(currentDayNum);
-  const todayEntry = historyData[currentDayNum] || {};
+  const todayEntry = historyData[currentDayNum] || historyData[String(currentDayNum)] || {};
   let todayCompletedCount = 0;
   todayActiveTargets.forEach((t) => {
     if (evaluateTargetStatus(t, todayEntry[t.id]) === 'green') {
