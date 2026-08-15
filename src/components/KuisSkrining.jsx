@@ -131,12 +131,11 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
 
   // Load existing BMI and quiz result from user metadata or local storage
   useEffect(() => {
-    setAnswers({});
-    setCurrentStep(1);
-
     if (!currentUser) {
       setUserBmiData(null);
       setSavedQuizResult(null);
+      setAnswers({});
+      setCurrentStep(0);
       return;
     }
 
@@ -152,7 +151,16 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
     // Load Quiz Result
     const cloudQuiz = meta.nutriwise_quiz_result;
     const localQuiz = JSON.parse(localStorage.getItem(quizKey) || 'null');
-    setSavedQuizResult(cloudQuiz || localQuiz);
+    const existingResult = cloudQuiz || localQuiz;
+    setSavedQuizResult(existingResult);
+
+    // Keep result view (10) if quiz is finished or currently on step 10, otherwise retain current question
+    setCurrentStep((prevStep) => {
+      if (prevStep === 10 || existingResult) {
+        return 10;
+      }
+      return prevStep > 0 ? prevStep : 0;
+    });
   }, [currentUser]);
 
   const handleSelectOption = (questionIndex, option) => {
@@ -580,6 +588,14 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
             <button
               onClick={() => {
                 setAnswers({});
+                setSavedQuizResult(null);
+                const quizKey = currentUser?.id ? `nutriwise_quiz_result_${currentUser.id}` : 'nutriwise_quiz_result';
+                localStorage.removeItem(quizKey);
+                if (currentUser && isSupabaseConfigured && supabase) {
+                  supabase.auth.updateUser({
+                    data: { nutriwise_quiz_result: null }
+                  });
+                }
                 setCurrentStep(1);
               }}
               className="btn-cta-outline"
