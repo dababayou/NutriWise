@@ -44,14 +44,25 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
   useEffect(() => { timezoneRef.current = timezone; }, [timezone]);
   useEffect(() => { startDateRef.current = startDate; }, [startDate]);
 
+  // Helper to generate user-scoped localStorage keys
+  const getStorageKey = (baseKey) => {
+    return currentUser?.id ? `nutriwise_${baseKey}_${currentUser.id}` : `nutriwise_${baseKey}`;
+  };
+
   // Load from Supabase / localStorage on mount & currentUser change
   useEffect(() => {
     if (currentUser) {
       const meta = currentUser.user_metadata || {};
-      
+      const uid = currentUser.id;
+      const historyKey = `nutriwise_history_${uid}`;
+      const targetsKey = `nutriwise_targets_${uid}`;
+      const setupKey = `nutriwise_setup_done_${uid}`;
+      const tzKey = `nutriwise_tz_${uid}`;
+      const startKey = `nutriwise_start_date_${uid}`;
+
       let localHistory = {};
       try {
-        const localHistoryStr = localStorage.getItem('nutriwise_history');
+        const localHistoryStr = localStorage.getItem(historyKey);
         if (localHistoryStr) localHistory = JSON.parse(localHistoryStr);
       } catch (e) {
         console.error('Error parsing local history:', e);
@@ -59,7 +70,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
 
       let localTargets = null;
       try {
-        const localTargetsStr = localStorage.getItem('nutriwise_targets');
+        const localTargetsStr = localStorage.getItem(targetsKey);
         if (localTargetsStr) localTargets = JSON.parse(localTargetsStr);
       } catch (e) {
         console.error('Error parsing local targets:', e);
@@ -69,27 +80,29 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
       const savedTargets = cloudTargets || localTargets;
 
       const cloudHistory = meta.nutriwise_history || {};
-      // Deep merge cloud and local history so no completed day is ever lost or overwritten by an empty object
       const mergedHistory = {
         ...cloudHistory,
         ...localHistory
       };
 
-      const savedSetupDone = meta.nutriwise_setup_done ?? JSON.parse(localStorage.getItem('nutriwise_setup_done') || 'false');
-      const savedTz = meta.nutriwise_tz || localStorage.getItem('nutriwise_tz') || 'Asia/Jakarta (WIB)';
-      const savedStartDate = meta.nutriwise_start_date || localStorage.getItem('nutriwise_start_date') || new Date().toISOString();
+      const hasLocalSetup = localStorage.getItem(setupKey) !== null;
+      const savedSetupDone = meta.nutriwise_setup_done ?? (hasLocalSetup ? JSON.parse(localStorage.getItem(setupKey)) : false);
 
-      // Ensure local storage is in sync with merged data
-      localStorage.setItem('nutriwise_history', JSON.stringify(mergedHistory));
-      localStorage.setItem('nutriwise_setup_done', JSON.stringify(savedSetupDone));
-      localStorage.setItem('nutriwise_tz', savedTz);
-      localStorage.setItem('nutriwise_start_date', savedStartDate);
+      const savedTz = meta.nutriwise_tz || localStorage.getItem(tzKey) || 'Asia/Jakarta (WIB)';
+      const savedStartDate = meta.nutriwise_start_date || localStorage.getItem(startKey) || new Date().toISOString();
+
+      // Ensure user-scoped local storage is in sync with merged data
+      localStorage.setItem(historyKey, JSON.stringify(mergedHistory));
+      localStorage.setItem(setupKey, JSON.stringify(savedSetupDone));
+      localStorage.setItem(tzKey, savedTz);
+      localStorage.setItem(startKey, savedStartDate);
 
       if (savedTargets) {
         setTargets(savedTargets);
         setInitialTargets(savedTargets);
-        localStorage.setItem('nutriwise_targets', JSON.stringify(savedTargets));
+        localStorage.setItem(targetsKey, JSON.stringify(savedTargets));
       } else {
+        setTargets(initialDefaultTargets);
         setInitialTargets(initialDefaultTargets);
       }
 
@@ -187,11 +200,11 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
     setTimezone(newTz);
     if (newStart) setStartDate(newStart);
 
-    localStorage.setItem('nutriwise_targets', JSON.stringify(newTargets));
-    localStorage.setItem('nutriwise_history', JSON.stringify(newHistory));
-    localStorage.setItem('nutriwise_setup_done', JSON.stringify(newSetupDone));
-    localStorage.setItem('nutriwise_tz', newTz);
-    if (newStart) localStorage.setItem('nutriwise_start_date', newStart);
+    localStorage.setItem(getStorageKey('targets'), JSON.stringify(newTargets));
+    localStorage.setItem(getStorageKey('history'), JSON.stringify(newHistory));
+    localStorage.setItem(getStorageKey('setup_done'), JSON.stringify(newSetupDone));
+    localStorage.setItem(getStorageKey('tz'), newTz);
+    if (newStart) localStorage.setItem(getStorageKey('start_date'), newStart);
 
     if (currentUser && isSupabaseConfigured && supabase) {
       try {
@@ -265,7 +278,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
       historyRef.current = updatedHistory;
 
       // 1. Write to localStorage immediately for instant UI responsiveness
-      localStorage.setItem('nutriwise_history', JSON.stringify(updatedHistory));
+      localStorage.setItem(getStorageKey('history'), JSON.stringify(updatedHistory));
 
       // 2. Debounce cloud sync to Supabase (400ms delay) so rapid typing stays smooth
       if (syncTimeoutRef.current) {
@@ -280,7 +293,7 @@ export default function Challenge30Days({ currentUser, onOpenAuth }) {
                 nutriwise_history: updatedHistory,
                 nutriwise_setup_done: setupDoneRef.current,
                 nutriwise_tz: timezoneRef.current,
-                nutriwise_start_date: startDateRef.current || localStorage.getItem('nutriwise_start_date') || new Date().toISOString()
+                nutriwise_start_date: startDateRef.current || localStorage.getItem(getStorageKey('start_date')) || new Date().toISOString()
               }
             });
           } catch (err) {

@@ -90,6 +90,11 @@ export default function App() {
     localStorage.removeItem('nutriwise_days');
     localStorage.removeItem('nutriwise_today_habits');
     localStorage.removeItem('nutriwise_active_tab');
+    localStorage.removeItem('nutriwise_targets');
+    localStorage.removeItem('nutriwise_history');
+    localStorage.removeItem('nutriwise_setup_done');
+    localStorage.removeItem('nutriwise_tz');
+    localStorage.removeItem('nutriwise_start_date');
     setCurrentUser(null);
   };
 
