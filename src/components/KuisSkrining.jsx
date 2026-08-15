@@ -131,21 +131,28 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
 
   // Load existing BMI and quiz result from user metadata or local storage
   useEffect(() => {
-    const meta = currentUser?.user_metadata || {};
+    setAnswers({});
+    setCurrentStep(1);
+
+    if (!currentUser) {
+      setUserBmiData(null);
+      setSavedQuizResult(null);
+      return;
+    }
+
+    const meta = currentUser.user_metadata || {};
+    const uid = currentUser.id;
+    const bmiKey = `nutriwise_bmi_data_${uid}`;
+    const quizKey = `nutriwise_quiz_result_${uid}`;
     
     // Load BMI Data
-    const bmiData = meta.nutriwise_bmi_data || JSON.parse(localStorage.getItem('nutriwise_bmi_data') || 'null');
+    const bmiData = meta.nutriwise_bmi_data || JSON.parse(localStorage.getItem(bmiKey) || 'null');
     setUserBmiData(bmiData);
 
     // Load Quiz Result
-    if (meta.nutriwise_quiz_result) {
-      setSavedQuizResult(meta.nutriwise_quiz_result);
-    } else {
-      const local = localStorage.getItem('nutriwise_quiz_result');
-      if (local) {
-        setSavedQuizResult(JSON.parse(local));
-      }
-    }
+    const cloudQuiz = meta.nutriwise_quiz_result;
+    const localQuiz = JSON.parse(localStorage.getItem(quizKey) || 'null');
+    setSavedQuizResult(cloudQuiz || localQuiz);
   }, [currentUser]);
 
   const handleSelectOption = (questionIndex, option) => {
@@ -251,7 +258,8 @@ export default function KuisSkrining({ currentUser, onNavigateToCalc }) {
 
     setSavedQuizResult(resultObj);
     setCurrentStep(10);
-    localStorage.setItem('nutriwise_quiz_result', JSON.stringify(resultObj));
+    const quizKey = currentUser?.id ? `nutriwise_quiz_result_${currentUser.id}` : 'nutriwise_quiz_result';
+    localStorage.setItem(quizKey, JSON.stringify(resultObj));
 
     // Save to Supabase user_metadata if configured
     if (currentUser && isSupabaseConfigured && supabase) {

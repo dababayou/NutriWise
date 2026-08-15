@@ -122,6 +122,22 @@ export default function ProfileModal({ isOpen, onClose, currentUser, onUpdateUse
       
       localStorage.removeItem('nutriwise_days');
       localStorage.removeItem('nutriwise_today_habits');
+      localStorage.removeItem('nutriwise_targets');
+      localStorage.removeItem('nutriwise_history');
+      localStorage.removeItem('nutriwise_setup_done');
+      localStorage.removeItem('nutriwise_tz');
+      localStorage.removeItem('nutriwise_start_date');
+      localStorage.removeItem('nutriwise_bmi_data');
+      localStorage.removeItem('nutriwise_quiz_result');
+      if (currentUser?.id) {
+        localStorage.removeItem(`nutriwise_targets_${currentUser.id}`);
+        localStorage.removeItem(`nutriwise_history_${currentUser.id}`);
+        localStorage.removeItem(`nutriwise_setup_done_${currentUser.id}`);
+        localStorage.removeItem(`nutriwise_tz_${currentUser.id}`);
+        localStorage.removeItem(`nutriwise_start_date_${currentUser.id}`);
+        localStorage.removeItem(`nutriwise_bmi_data_${currentUser.id}`);
+        localStorage.removeItem(`nutriwise_quiz_result_${currentUser.id}`);
+      }
 
       alert('Akun Anda telah berhasil dihapus secara permanen.');
       setDeleteStep(0);

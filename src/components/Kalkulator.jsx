@@ -21,13 +21,27 @@ export default function Kalkulator({ currentUser, onNavigateToQuiz }) {
   const [waterActivity, setWaterActivity] = useState('santai');
   const [waterResult, setWaterResult] = useState(null); // { liters: '2,5', glasses: 10 }
 
-  // Load existing calculated BMI on mount
+  // Load existing calculated BMI on mount & currentUser change
   useEffect(() => {
-    const meta = currentUser?.user_metadata || {};
-    const savedBmi = meta.nutriwise_bmi_data || JSON.parse(localStorage.getItem('nutriwise_bmi_data') || 'null');
-    if (savedBmi) {
-      setBmiResult(savedBmi);
+    setBmiWeight('');
+    setBmiHeight('');
+    setCalWeight('');
+    setCalHeight('');
+    setCalAge('');
+    setWaterWeight('');
+    setCalResult(null);
+    setWaterResult(null);
+
+    if (!currentUser) {
+      setBmiResult(null);
+      return;
     }
+
+    const meta = currentUser.user_metadata || {};
+    const uid = currentUser.id;
+    const bmiKey = `nutriwise_bmi_data_${uid}`;
+    const savedBmi = meta.nutriwise_bmi_data || JSON.parse(localStorage.getItem(bmiKey) || 'null');
+    setBmiResult(savedBmi);
   }, [currentUser]);
 
   // Calculate BMI
@@ -68,7 +82,8 @@ export default function Kalkulator({ currentUser, onNavigateToQuiz }) {
       };
 
       setBmiResult(resultObj);
-      localStorage.setItem('nutriwise_bmi_data', JSON.stringify(resultObj));
+      const bmiKey = currentUser?.id ? `nutriwise_bmi_data_${currentUser.id}` : 'nutriwise_bmi_data';
+      localStorage.setItem(bmiKey, JSON.stringify(resultObj));
 
       if (currentUser && isSupabaseConfigured && supabase) {
         try {
